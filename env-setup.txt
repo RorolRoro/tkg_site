@@ -1,0 +1,14 @@
+# Configuration requise pour .env.local
+# Copiez ce contenu dans un fichier .env.local à la racine du projet
+
+# Discord OAuth2 Configuration
+DISCORD_CLIENT_ID=your_discord_client_id_here
+DISCORD_CLIENT_SECRET=your_discord_client_secret_here
+
+# NextAuth Configuration
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=c3726931c78e3aa4817b092fb508f123d7d357868bdb78b96c8d9efe64d925ef
+
+# Database
+DATABASE_URL="file:./dev.db"
+
