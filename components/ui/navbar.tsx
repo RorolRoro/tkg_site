@@ -66,7 +66,7 @@ const Navbar = () => {
               </Link>
             ))}
             
-            {session?.user?.role === 'STAFF' && (
+            {(session?.user?.role === 'STAFF' || session?.user?.role === 'ADMIN') && (
               <div ref={staffMenuRef} className="relative ml-4 pl-4 border-l border-dark-700">
                 <button
                   onClick={() => setIsStaffMenuOpen(!isStaffMenuOpen)}
@@ -122,7 +122,7 @@ const Navbar = () => {
                         ? 'text-yellow-400' 
                         : 'text-blue-400'
                     }`}>
-                      {session.user?.role === 'STAFF' ? 'Staff' : 'Joueur'}
+                      {session.user?.role === 'ADMIN' ? 'Admin' : session.user?.role === 'STAFF' ? 'Staff' : 'Joueur'}
                     </span>
                   </div>
                 </div>
@@ -188,7 +188,7 @@ const Navbar = () => {
                 </Link>
               ))}
               
-              {session?.user?.role === 'STAFF' && (
+              {(session?.user?.role === 'STAFF' || session?.user?.role === 'ADMIN') && (
                 <div className="pt-4 border-t border-dark-700">
                   <div className="px-3 py-2 text-primary-400 font-medium">Staff</div>
                   {staffNavigation.map((item) => (
@@ -226,7 +226,7 @@ const Navbar = () => {
                             ? 'text-yellow-400' 
                             : 'text-blue-400'
                         }`}>
-                          {session.user?.role === 'STAFF' ? 'Staff' : 'Joueur'}
+                          {session.user?.role === 'ADMIN' ? 'Admin' : session.user?.role === 'STAFF' ? 'Staff' : 'Joueur'}
                         </span>
                       </div>
                     </div>

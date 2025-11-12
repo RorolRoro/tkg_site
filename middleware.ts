@@ -22,13 +22,13 @@ export default withAuth(
     }
 
     // Si l'utilisateur est connecté mais n'a pas le bon rôle, bloquer l'accès
-    if (token && token.role && token.role !== 'JOUEUR' && token.role !== 'STAFF') {
+    if (token && token.role && token.role !== 'JOUEUR' && token.role !== 'STAFF' && token.role !== 'ADMIN') {
       console.log('Middleware - Redirection vers unauthorized (mauvais rôle):', token.role)
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }
 
-    // Vérifier l'accès aux pages staff (seuls les STAFF peuvent y accéder)
-    if (isStaffPage && token?.role !== 'STAFF') {
+    // Vérifier l'accès aux pages staff (seuls les STAFF et ADMIN peuvent y accéder)
+    if (isStaffPage && token?.role !== 'STAFF' && token?.role !== 'ADMIN') {
       console.log('Middleware - Redirection vers unauthorized (accès staff)')
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }

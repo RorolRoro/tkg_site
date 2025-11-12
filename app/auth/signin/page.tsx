@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Shield, Users, ArrowRight } from 'lucide-react'
+import { Shield, Users, ArrowRight, Settings } from 'lucide-react'
 
 export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -38,6 +38,29 @@ export default function SignInPage() {
       }
     } catch (error) {
       console.error('Erreur de connexion:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleAdminSignIn = async () => {
+    setIsLoading(true)
+    try {
+      const result = await signIn('admin', { 
+        callbackUrl: '/',
+        redirect: false 
+      })
+      
+      console.log('Admin SignIn result:', result)
+      
+      if (result?.ok) {
+        // Forcer le rechargement de la page pour mettre à jour la session
+        window.location.href = '/'
+      } else {
+        console.error('Erreur de connexion admin:', result?.error)
+      }
+    } catch (error) {
+      console.error('Erreur de connexion admin:', error)
     } finally {
       setIsLoading(false)
     }
@@ -98,6 +121,41 @@ export default function SignInPage() {
                 En vous connectant, vous acceptez nos conditions d'utilisation
               </p>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Admin Access Card */}
+        <Card className="glass-effect border-yellow-600/50 bg-yellow-600/5">
+          <CardHeader className="text-center">
+            <CardTitle className="text-white text-lg flex items-center justify-center space-x-2">
+              <Settings className="h-5 w-5 text-yellow-400" />
+              <span>Accès Administrateur</span>
+            </CardTitle>
+            <CardDescription className="text-gray-400">
+              Connexion de développement et d'administration
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Button
+              onClick={handleAdminSignIn}
+              disabled={isLoading}
+              variant="glow"
+              size="lg"
+              className="w-full group"
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                  Connexion admin en cours...
+                </div>
+              ) : (
+                <div className="flex items-center">
+                  <Settings className="w-5 h-5 mr-2" />
+                  Connexion Administrateur
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              )}
+            </Button>
           </CardContent>
         </Card>
 

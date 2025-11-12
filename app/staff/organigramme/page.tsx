@@ -219,18 +219,23 @@ export default function OrganigrammePage() {
 
   const fetchStaffMembers = async () => {
     try {
+      console.log('🔄 Récupération des membres Discord...')
       // Récupérer les membres depuis Discord
       const response = await fetch('/api/discord/guild/members')
+      const data = await response.json()
+      
       if (response.ok) {
-        const data = await response.json()
+        console.log('✅ Membres Discord récupérés:', data.length, 'membres')
         setStaffMembers(data)
       } else {
-        console.error('Erreur lors de la récupération des membres Discord')
+        console.error('❌ Erreur API Discord:', data.error)
+        console.log('🔄 Fallback vers les données mockées')
         // Fallback vers les données mockées
         setStaffMembers(mockStaffMembers)
       }
     } catch (error) {
-      console.error('Erreur lors du chargement de l\'organigramme:', error)
+      console.error('❌ Erreur lors du chargement de l\'organigramme:', error)
+      console.log('🔄 Fallback vers les données mockées')
       // Fallback vers les données mockées
       setStaffMembers(mockStaffMembers)
     } finally {
@@ -369,6 +374,17 @@ export default function OrganigrammePage() {
             Structure hiérarchique du staff Tokyo Ghoul RP. 
             {canManagePermissions && ' Vous pouvez gérer les permissions des membres.'}
           </p>
+          
+          {/* Status Indicator */}
+          <div className="mb-6">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-dark-800/50 rounded-lg">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-gray-300">
+                {staffMembers.length} membres chargés
+                {staffMembers.some(m => m.username) ? ' (Discord connecté)' : ' (Mode démo)'}
+              </span>
+            </div>
+          </div>
           
           {/* Boutons de synchronisation */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

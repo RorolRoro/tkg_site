@@ -1,5 +1,6 @@
 import { NextAuthOptions } from 'next-auth'
 import DiscordProvider from 'next-auth/providers/discord'
+import CredentialsProvider from 'next-auth/providers/credentials'
 
 // IDs Discord spécifiques au serveur
 const DISCORD_SERVER_ID = '1332323284825411658'
@@ -17,6 +18,27 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
+    CredentialsProvider({
+      id: 'admin',
+      name: 'Admin',
+      credentials: {
+        username: { label: "Username", type: "text", placeholder: "admin" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        // Connexion admin automatique (développement uniquement)
+        // En production, vérifier les credentials ici
+        console.log('Admin authorize called with:', credentials)
+        
+        return {
+          id: 'admin-user',
+          name: 'Administrateur',
+          email: 'admin@tokyoghoul-rp.com',
+          image: null,
+          role: 'ADMIN'
+        }
+      }
+    })
   ],
   callbacks: {
     async jwt({ token, user, account }) {
@@ -24,7 +46,14 @@ export const authOptions: NextAuthOptions = {
       console.log('JWT callback - User:', user)
       console.log('JWT callback - Account:', account)
       
-      if (user && account?.provider === 'discord') {
+      if (user && account?.provider === 'admin') {
+        // Connexion admin - accès complet
+        token.role = 'ADMIN'
+        token.sub = user.id
+        token.name = user.name
+        token.email = user.email
+        console.log('JWT callback - Admin role assigned:', token.role)
+      } else if (user && account?.provider === 'discord') {
         try {
           // Vérifier l'appartenance au serveur
           const guildResponse = await fetch(
@@ -71,9 +100,12 @@ export const authOptions: NextAuthOptions = {
       console.log('Session callback - Token:', token)
       
       if (session.user) {
-        session.user.id = token.sub!
+        session.user.id = token.sub || token.id || 'unknown'
         session.user.role = (token.role as string) || 'JOUEUR'
+        session.user.name = token.name || session.user.name
+        session.user.email = token.email || session.user.email
         console.log('Session callback - Final role:', session.user.role)
+        console.log('Session callback - Final user ID:', session.user.id)
       }
       
       return session

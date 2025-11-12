@@ -177,17 +177,40 @@ export async function GET() {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
-    // En production, vous utiliseriez l'API Discord avec un bot token
-    // const response = await fetch(`https://discord.com/api/v10/guilds/${DISCORD_SERVER_ID}/members`, {
-    //   headers: {
-    //     'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN}`,
-    //   },
-    // })
-    // const members = await response.json()
+    // Essayer de récupérer les vrais membres Discord
+    let discordMembers = []
+    
+    if (process.env.DISCORD_BOT_TOKEN) {
+      try {
+        console.log('Tentative de récupération des membres Discord...')
+        const response = await fetch(`https://discord.com/api/v10/guilds/${DISCORD_SERVER_ID}/members?limit=1000`, {
+          headers: {
+            'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+          },
+        })
+        
+        if (response.ok) {
+          discordMembers = await response.json()
+          console.log(`Récupéré ${discordMembers.length} membres Discord`)
+        } else {
+          console.error('Erreur API Discord:', response.status, await response.text())
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération Discord:', error)
+      }
+    } else {
+      console.log('DISCORD_BOT_TOKEN non configuré, utilisation des données mockées')
+    }
+
+    // Si pas de données Discord, utiliser les données mockées
+    if (discordMembers.length === 0) {
+      console.log('Utilisation des données mockées')
+      discordMembers = mockDiscordMembers
+    }
 
     // Filtrer les membres qui ont les rôles requis
-    const staffMembers = mockDiscordMembers.filter(member => {
-      return member.roles.some(roleId => Object.values(DISCORD_ROLES).includes(roleId))
+    const staffMembers = discordMembers.filter(member => {
+      return member.roles && member.roles.some(roleId => Object.values(DISCORD_ROLES).includes(roleId))
     })
 
     // Transformer les données pour l'organigramme
