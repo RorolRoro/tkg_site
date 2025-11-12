@@ -16,7 +16,7 @@ export default function UnauthorizedPage() {
               Accès Refusé
             </CardTitle>
             <CardDescription className="text-gray-400">
-              Vous n'avez pas les permissions nécessaires pour accéder à ce site
+              Vous n&apos;avez pas les permissions nécessaires pour accéder à ce site
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

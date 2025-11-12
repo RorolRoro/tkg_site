@@ -78,14 +78,14 @@ export async function POST() {
     }
 
     // Filtrer les membres staff
-    const staffMembers = discordMembers.filter(member => {
-      return member.roles && member.roles.some(roleId => Object.values(DISCORD_ROLES).includes(roleId))
+    const staffMembers = discordMembers.filter((member: any) => {
+      return member.roles && member.roles.some((roleId: string) => Object.values(DISCORD_ROLES).includes(roleId))
     })
 
     console.log(`📊 ${staffMembers.length} membres staff trouvés`)
 
     // Transformer les données
-    const transformedMembers = staffMembers.map(member => {
+    const transformedMembers = staffMembers.map((member: any) => {
       const user = member.user
       const displayName = member.nick || user.global_name || user.username
       const avatarUrl = user.avatar 

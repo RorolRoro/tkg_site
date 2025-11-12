@@ -340,7 +340,7 @@ export default function MesTicketsPage() {
                     <Ticket className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-white text-xl mb-2">Aucun ticket</h3>
                     <p className="text-gray-400 mb-6">
-                      Vous n'avez pas encore créé de ticket.
+                      Vous n&apos;avez pas encore créé de ticket.
                     </p>
                     <Button
                       variant="glow"

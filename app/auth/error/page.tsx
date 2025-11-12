@@ -15,7 +15,7 @@ export default function AuthErrorPage() {
       case 'AccessDenied':
         return {
           title: 'Accès Refusé',
-          description: 'Vous n\'êtes pas membre du serveur Discord Tokyo Ghoul RP ou vous n\'avez pas les permissions nécessaires.',
+          description: 'Vous n&apos;êtes pas membre du serveur Discord Tokyo Ghoul RP ou vous n&apos;avez pas les permissions nécessaires.',
           details: 'Pour vous connecter, vous devez être membre du serveur Discord avec un rôle valide (Joueur ou Staff).'
         }
       case 'Configuration':
@@ -68,7 +68,7 @@ export default function AuthErrorPage() {
                 <h4 className="text-white font-semibold text-sm">Pour rejoindre le serveur :</h4>
                 <ol className="text-gray-400 text-sm space-y-1">
                   <li>1. Rejoignez le serveur Discord Tokyo Ghoul RP</li>
-                  <li>2. Attendez qu'un membre du staff vous assigne un rôle</li>
+                  <li>2. Attendez qu&apos;un membre du staff vous assigne un rôle</li>
                   <li>3. Revenez sur ce site et reconnectez-vous</li>
                 </ol>
                 <div className="mt-4">
@@ -91,7 +91,7 @@ export default function AuthErrorPage() {
               <Link href="/" className="flex-1">
                 <Button variant="outline" className="w-full group">
                   <Home className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-                  Retour à l'Accueil
+                  Retour à l&apos;Accueil
                 </Button>
               </Link>
               <Link href="/tickets" className="flex-1">

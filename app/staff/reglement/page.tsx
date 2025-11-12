@@ -141,7 +141,7 @@ export default function StaffReglementPage() {
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             Règlement officiel du staff Tokyo Ghoul RP. 
-            Ce document définit les devoirs, responsabilités et procédures pour tous les membres de l'équipe staff.
+            Ce document définit les devoirs, responsabilités et procédures pour tous les membres de l&apos;équipe staff.
           </p>
         </div>
 

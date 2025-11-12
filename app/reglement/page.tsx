@@ -342,7 +342,7 @@ export default function ReglementPage() {
               </h3>
               <p className="text-gray-400 mb-4">
                 Si vous avez des questions concernant le règlement ou besoin de clarifications, 
-                n'hésitez pas à créer un ticket ou contacter un membre du staff.
+                n&apos;hésitez pas à créer un ticket ou contacter un membre du staff.
               </p>
               <div className="text-sm text-gray-500">
                 Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}

@@ -209,12 +209,12 @@ export async function GET() {
     }
 
     // Filtrer les membres qui ont les rôles requis
-    const staffMembers = discordMembers.filter(member => {
-      return member.roles && member.roles.some(roleId => Object.values(DISCORD_ROLES).includes(roleId))
+    const staffMembers = discordMembers.filter((member: any) => {
+      return member.roles && member.roles.some((roleId: string) => Object.values(DISCORD_ROLES).includes(roleId))
     })
 
     // Transformer les données pour l'organigramme
-    const transformedMembers = staffMembers.map(member => {
+    const transformedMembers = staffMembers.map((member: any) => {
       const user = member.user
       const displayName = member.nick || user.global_name || user.username
       const avatarUrl = user.avatar 

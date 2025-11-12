@@ -28,7 +28,7 @@ export default function TestSessionPage() {
           <CardHeader>
             <CardTitle className="text-white text-center">Non connecté</CardTitle>
             <CardDescription className="text-center">
-              Vous n'êtes pas connecté
+              Vous n&apos;êtes pas connecté
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">
@@ -183,7 +183,7 @@ export default function TestSessionPage() {
                 variant="outline"
                 className="w-full"
               >
-                Retour à l'accueil
+                Retour à l&apos;accueil
               </Button>
               {(session?.user?.role === 'STAFF' || session?.user?.role === 'ADMIN') && (
                 <Button 

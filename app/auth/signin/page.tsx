@@ -118,7 +118,7 @@ export default function SignInPage() {
 
             <div className="text-center">
               <p className="text-sm text-gray-500">
-                En vous connectant, vous acceptez nos conditions d'utilisation
+                En vous connectant, vous acceptez nos conditions d&apos;utilisation
               </p>
             </div>
           </CardContent>
@@ -132,7 +132,7 @@ export default function SignInPage() {
               <span>Accès Administrateur</span>
             </CardTitle>
             <CardDescription className="text-gray-400">
-              Connexion de développement et d'administration
+              Connexion de développement et d&apos;administration
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

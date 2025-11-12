@@ -356,7 +356,7 @@ export default function OrganigrammePage() {
       <div className="min-h-screen bg-dark-950 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-primary-600/30 border-t-primary-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Chargement de l'organigramme...</p>
+          <p className="text-gray-400">Chargement de l&apos;organigramme...</p>
         </div>
       </div>
     )
@@ -371,8 +371,8 @@ export default function OrganigrammePage() {
             Organigramme Staff
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-6">
-            Structure hiérarchique du staff Tokyo Ghoul RP. 
-            {canManagePermissions && ' Vous pouvez gérer les permissions des membres.'}
+            Structure hiérarchique du staff Tokyo Ghoul RP.
+            {canManagePermissions ? ' Vous pouvez gérer les permissions des membres.' : ''}
           </p>
           
           {/* Status Indicator */}
@@ -381,7 +381,7 @@ export default function OrganigrammePage() {
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-sm text-gray-300">
                 {staffMembers.length} membres chargés
-                {staffMembers.some(m => m.username) ? ' (Discord connecté)' : ' (Mode démo)'}
+                {staffMembers.some((m: any) => m.username) ? ' (Discord connecté)' : ' (Mode démo)'}
               </span>
             </div>
           </div>

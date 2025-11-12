@@ -14,7 +14,7 @@ const Footer = () => {
               <span className="text-white font-semibold text-lg">Tokyo Ghoul RP</span>
             </div>
             <p className="text-gray-400 text-sm mb-4 max-w-md">
-              Plongez dans l'univers sombre et immersif de Tokyo Ghoul. 
+              Plongez dans l&apos;univers sombre et immersif de Tokyo Ghoul. 
               Rejoignez notre communauté de roleplay et vivez des aventures épiques 
               dans les rues de Tokyo.
             </p>

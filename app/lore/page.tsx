@@ -95,8 +95,8 @@ export default function LorePage() {
             Lore Global
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Explorez l'univers riche et complexe de Tokyo Ghoul, 
-            découvrez les factions, les personnages et l'histoire qui façonnent notre monde RP.
+            Explorez l&apos;univers riche et complexe de Tokyo Ghoul, 
+            découvrez les factions, les personnages et l&apos;histoire qui façonnent notre monde RP.
           </p>
         </div>
 
@@ -157,7 +157,7 @@ export default function LorePage() {
                   <h4 className="text-white font-semibold">Époque Moderne</h4>
                   <p className="text-gray-400">
                     Tokyo actuel où les ghouls et humains coexistent dans un équilibre fragile. 
-                    La CCG maintient l'ordre tandis que diverses organisations ghouls opèrent dans l'ombre.
+                    La CCG maintient l&apos;ordre tandis que diverses organisations ghouls opèrent dans l&apos;ombre.
                   </p>
                 </div>
               </div>
@@ -178,7 +178,7 @@ export default function LorePage() {
                 <div>
                   <h4 className="text-white font-semibold">Découverte des Ghouls</h4>
                   <p className="text-gray-400">
-                    Première reconnaissance officielle de l'existence des ghouls et début des recherches 
+                    Première reconnaissance officielle de l&apos;existence des ghouls et début des recherches 
                     sur leurs capacités et leur biologie unique.
                   </p>
                 </div>

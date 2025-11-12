@@ -100,7 +100,7 @@ export const authOptions: NextAuthOptions = {
       console.log('Session callback - Token:', token)
       
       if (session.user) {
-        session.user.id = token.sub || token.id || 'unknown'
+        session.user.id = (token.sub || token.id || 'unknown') as string
         session.user.role = (token.role as string) || 'JOUEUR'
         session.user.name = token.name || session.user.name
         session.user.email = token.email || session.user.email

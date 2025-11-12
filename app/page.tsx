@@ -54,7 +54,7 @@ export default function HomePage() {
               Tokyo Ghoul RP
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              Plongez dans l'univers sombre et immersif de Tokyo Ghoul. 
+              Plongez dans l&apos;univers sombre et immersif de Tokyo Ghoul. 
               Rejoignez notre communauté de roleplay et vivez des aventures épiques 
               dans les rues de Tokyo.
             </p>
@@ -63,7 +63,7 @@ export default function HomePage() {
               {session ? (
                 <Link href="/guide">
                   <Button size="xl" variant="glow" className="group">
-                    Commencer l'Aventure
+                    Commencer l&apos;Aventure
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
@@ -113,7 +113,7 @@ export default function HomePage() {
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               Découvrez ce qui fait de Tokyo Ghoul RP la meilleure expérience de roleplay 
-              dans l'univers de Tokyo Ghoul.
+              dans l&apos;univers de Tokyo Ghoul.
             </p>
           </div>
 
@@ -146,8 +146,8 @@ export default function HomePage() {
               Prêt à Commencer ?
             </h2>
             <p className="text-xl text-gray-300 mb-8">
-              Rejoignez notre communauté et commencez votre aventure dans l'univers de Tokyo Ghoul. 
-              L'inscription est simple et rapide !
+              Rejoignez notre communauté et commencez votre aventure dans l&apos;univers de Tokyo Ghoul. 
+              L&apos;inscription est simple et rapide !
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

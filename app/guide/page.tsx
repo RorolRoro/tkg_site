@@ -112,7 +112,7 @@ export default function GuidePage() {
             Guide du Nouveau Joueur
           </h1>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Bienvenue dans l'univers de Tokyo Ghoul RP ! Ce guide vous accompagnera 
+            Bienvenue dans l&apos;univers de Tokyo Ghoul RP ! Ce guide vous accompagnera 
             dans vos premiers pas pour devenir un membre actif de notre communauté.
           </p>
         </div>
@@ -182,7 +182,7 @@ export default function GuidePage() {
         <Card className="glass-effect mb-12">
           <CardHeader>
             <CardTitle className="text-white text-2xl text-center">
-              Conseils d'Experts
+              Conseils d&apos;Experts
             </CardTitle>
           </CardHeader>
           <CardContent>

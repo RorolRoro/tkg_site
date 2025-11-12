@@ -108,6 +108,7 @@ export function AuditLogComponent({ resourceId, userId, limit = 50 }: AuditLogPr
 
   useEffect(() => {
     loadLogs()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resourceId, userId, limit])
 
   const filteredLogs = logs.filter(log => {
@@ -148,7 +149,7 @@ export function AuditLogComponent({ resourceId, userId, limit = 50 }: AuditLogPr
         <CardContent className="p-6">
           <div className="flex items-center justify-center space-x-2">
             <RefreshCw className="h-5 w-5 animate-spin text-primary-400" />
-            <span className="text-gray-400">Chargement des logs d'audit...</span>
+            <span className="text-gray-400">Chargement des logs d&apos;audit...</span>
           </div>
         </CardContent>
       </Card>
@@ -177,7 +178,7 @@ export function AuditLogComponent({ resourceId, userId, limit = 50 }: AuditLogPr
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-white">Logs d'Audit</CardTitle>
+            <CardTitle className="text-white">Logs d&apos;Audit</CardTitle>
             <CardDescription>
               Historique des actions effectuées sur le tableur
             </CardDescription>
@@ -253,7 +254,7 @@ export function AuditLogComponent({ resourceId, userId, limit = 50 }: AuditLogPr
           {filteredLogs.length === 0 ? (
             <div className="text-center py-8">
               <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-400">Aucun log d'audit trouvé</p>
+              <p className="text-gray-400">Aucun log d&apos;audit trouvé</p>
             </div>
           ) : (
             filteredLogs.map((log) => (

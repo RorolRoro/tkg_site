@@ -422,7 +422,7 @@ export default function StaffTicketsPage() {
                     <Ticket className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-white text-xl mb-2">Aucun ticket</h3>
                     <p className="text-gray-400">
-                      Il n'y a actuellement aucun ticket à traiter.
+                      Il n&apos;y a actuellement aucun ticket à traiter.
                     </p>
                   </CardContent>
                 </Card>

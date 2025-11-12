@@ -114,7 +114,7 @@ export default function DiscordDebugPage() {
                 <span>Tests Discord</span>
               </CardTitle>
               <CardDescription>
-                Testez la connexion à l'API Discord et la récupération des membres
+                Testez la connexion à l&apos;API Discord et la récupération des membres
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -169,7 +169,7 @@ export default function DiscordDebugPage() {
                   </Badge>
                 </CardTitle>
                 <CardDescription>
-                  Données récupérées depuis l'API Discord
+                  Données récupérées depuis l&apos;API Discord
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -250,7 +250,7 @@ export default function DiscordDebugPage() {
               <CardHeader>
                 <CardTitle className="text-white">Données Brutes</CardTitle>
                 <CardDescription>
-                  Données complètes retournées par l'API
+                  Données complètes retournées par l&apos;API
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -271,17 +271,17 @@ export default function DiscordDebugPage() {
             <div>
               <h3 className="text-white font-medium mb-2">1. Configuration du Bot Discord</h3>
               <p className="text-gray-400 text-sm">
-                Pour que l'organigramme fonctionne avec les vrais pseudos Discord, vous devez :
+                Pour que l&apos;organigramme fonctionne avec les vrais pseudos Discord, vous devez :
               </p>
               <ul className="text-gray-400 text-sm mt-2 space-y-1">
                 <li>• Créer un bot Discord sur le portail développeur</li>
-                <li>• Inviter le bot sur votre serveur avec les permissions "View Server Members"</li>
+                <li>• Inviter le bot sur votre serveur avec les permissions &quot;View Server Members&quot;</li>
                 <li>• Ajouter le token du bot dans votre fichier .env</li>
               </ul>
             </div>
             
             <div>
-              <h3 className="text-white font-medium mb-2">2. Variables d'environnement</h3>
+              <h3 className="text-white font-medium mb-2">2. Variables d&apos;environnement</h3>
               <p className="text-gray-400 text-sm">
                 Ajoutez ces variables à votre fichier .env :
               </p>
@@ -294,8 +294,8 @@ DISCORD_SERVER_ID=1332323284825411658`}
             <div>
               <h3 className="text-white font-medium mb-2">3. Test</h3>
               <p className="text-gray-400 text-sm">
-                Cliquez sur "Tester la connexion Discord" pour vérifier que tout fonctionne.
-                Si vous voyez des pseudos réels au lieu de "Owner 1", "Owner 2", etc., c'est que ça marche !
+                Cliquez sur &quot;Tester la connexion Discord&quot; pour vérifier que tout fonctionne.
+                Si vous voyez des pseudos réels au lieu de &quot;Owner 1&quot;, &quot;Owner 2&quot;, etc., c&apos;est que ça marche !
               </p>
             </div>
           </CardContent>
