@@ -101,12 +101,14 @@ const defaultTickets: TicketData[] = [
 // Charger les tickets depuis le fichier ou utiliser les tickets par défaut
 function loadTickets(): TicketData[] {
   try {
+    // En build statique, le fichier peut ne pas exister, c'est normal
     if (existsSync(TICKETS_FILE)) {
       const data = readFileSync(TICKETS_FILE, 'utf-8')
       return JSON.parse(data)
     }
   } catch (error) {
-    console.error('Erreur lors du chargement des tickets:', error)
+    // Ne pas faire échouer le build si le fichier n'existe pas ou est corrompu
+    console.warn('Impossible de charger les tickets depuis le fichier (utilisation des tickets par défaut):', error)
   }
   return defaultTickets
 }
@@ -116,12 +118,27 @@ function saveTickets(tickets: TicketData[]): void {
   try {
     const { mkdirSync } = require('fs')
     const dir = join(process.cwd(), 'data')
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true })
+    // Créer le dossier s'il n'existe pas (avec gestion d'erreur silencieuse)
+    try {
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true })
+      }
+    } catch (mkdirError) {
+      // Ignorer les erreurs de création de dossier (peut échouer en build statique)
+      console.warn('Impossible de créer le dossier data:', mkdirError)
     }
-    writeFileSync(TICKETS_FILE, JSON.stringify(tickets, null, 2), 'utf-8')
+    
+    // Essayer d'écrire le fichier, mais ne pas échouer si on est en build statique
+    try {
+      writeFileSync(TICKETS_FILE, JSON.stringify(tickets, null, 2), 'utf-8')
+    } catch (writeError) {
+      // En build statique ou sur Netlify, on peut ne pas pouvoir écrire
+      // C'est OK, les tickets seront en mémoire pendant la session
+      console.warn('Impossible d\'écrire le fichier de tickets (normal en build statique):', writeError)
+    }
   } catch (error) {
-    console.error('Erreur lors de la sauvegarde des tickets:', error)
+    // Ne pas faire échouer le build à cause de la sauvegarde des tickets
+    console.warn('Erreur lors de la sauvegarde des tickets (non bloquant):', error)
   }
 }
 

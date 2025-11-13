@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
           sender: 'user' as const,
           senderName: session.user.name || 'Utilisateur',
           senderDiscordId: session.user.id,
-          senderDiscordUsername: session.user.name,
+          senderDiscordUsername: session.user.name || undefined,
           timestamp: new Date().toISOString(),
           attachments: attachments || []
         }

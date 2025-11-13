@@ -18,6 +18,8 @@ interface TicketMessage {
   content: string
   sender: 'user' | 'staff'
   senderName: string
+  senderDiscordId?: string
+  senderDiscordUsername?: string
   timestamp: string
   attachments?: {
     type: 'image' | 'link' | 'video'
