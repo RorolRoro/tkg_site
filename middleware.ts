@@ -28,7 +28,9 @@ export default withAuth(
     }
 
     // Vérifier l'accès aux pages staff (seuls les STAFF et ADMIN peuvent y accéder)
-    if (isStaffPage && token?.role !== 'STAFF' && token?.role !== 'ADMIN') {
+    // Exception : l'organigramme est public
+    const isOrganigrammePage = req.nextUrl.pathname === '/staff/organigramme'
+    if (isStaffPage && !isOrganigrammePage && token?.role !== 'STAFF' && token?.role !== 'ADMIN') {
       console.log('Middleware - Redirection vers unauthorized (accès staff)')
       return NextResponse.redirect(new URL('/unauthorized', req.url))
     }

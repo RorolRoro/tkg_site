@@ -79,9 +79,9 @@ export default function HomePage() {
                 </Button>
               )}
               
-              <Link href="/lore">
+              <Link href="/guide">
                 <Button size="xl" variant="outline" className="group">
-                  Découvrir le Lore
+                  Guide du Serveur
                   <BookOpen className="ml-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                 </Button>
               </Link>
@@ -133,50 +133,6 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-dark-900 to-dark-800">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="glass-effect rounded-2xl p-12">
-            <Sparkles className="h-16 w-16 text-primary-400 mx-auto mb-6" />
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              Prêt à Commencer ?
-            </h2>
-            <p className="text-xl text-gray-300 mb-8">
-              Rejoignez notre communauté et commencez votre aventure dans l&apos;univers de Tokyo Ghoul. 
-              L&apos;inscription est simple et rapide !
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {session ? (
-                <Link href="/guide">
-                  <Button size="lg" variant="glow" className="group">
-                    Guide du Nouveau Joueur
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-              ) : (
-                <Button 
-                  size="lg" 
-                  variant="glow" 
-                  className="group"
-                  onClick={() => window.location.href = 'steam://connect/45.154.34.96:27017'}
-                >
-                  Rejoindre le Serveur
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              )}
-              
-              <Link href="/reglement">
-                <Button size="lg" variant="outline" className="group">
-                  Lire le Règlement
-                  <BookOpen className="ml-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
       </section>

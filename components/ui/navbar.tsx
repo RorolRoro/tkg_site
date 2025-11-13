@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { Menu, X, User, Shield, ChevronDown } from 'lucide-react'
+import { Menu, X, User, Shield, ChevronDown, RefreshCw, LogOut } from 'lucide-react'
 import { Button } from './button'
 import { cn } from '@/lib/utils'
 
@@ -33,13 +33,12 @@ const Navbar = () => {
     { name: 'Lore', href: '/lore' },
     { name: 'Guide', href: '/guide' },
     { name: 'Tickets', href: '/tickets' },
-    { name: 'Mes Tickets', href: '/mes-tickets' },
+    { name: 'Organigramme', href: '/staff/organigramme' },
   ]
 
   const staffNavigation = [
     { name: 'Règlement Staff', href: '/staff/reglement' },
     { name: 'Tickets', href: '/staff/tickets' },
-    { name: 'Organigramme', href: '/staff/organigramme' },
   ]
 
   return (
@@ -126,25 +125,23 @@ const Navbar = () => {
                     </span>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <button
                   onClick={async () => {
                     // Forcer la synchronisation des rôles
                     await signIn('discord', { callbackUrl: window.location.href })
                   }}
-                  className="flex items-center space-x-1"
+                  className="p-2 text-gray-400 hover:text-white transition-colors duration-200 rounded-lg hover:bg-dark-800"
+                  title="Synchroniser les rôles"
                 >
-                  <Shield className="h-3 w-3" />
-                  <span>Sync Rôles</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
+                  <RefreshCw className="h-4 w-4" />
+                </button>
+                <button
                   onClick={() => signOut()}
+                  className="p-2 text-gray-400 hover:text-red-400 transition-colors duration-200 rounded-lg hover:bg-dark-800"
+                  title="Déconnexion"
                 >
-                  Déconnexion
-                </Button>
+                  <LogOut className="h-4 w-4" />
+                </button>
               </div>
             ) : (
               <Button
@@ -230,30 +227,27 @@ const Navbar = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
+                    <div className="flex items-center space-x-2">
+                      <button
                         onClick={async () => {
                           await signIn('discord', { callbackUrl: window.location.href })
                           setIsMenuOpen(false)
                         }}
+                        className="p-2 text-gray-400 hover:text-white transition-colors duration-200 rounded-lg hover:bg-dark-800"
+                        title="Synchroniser les rôles"
                       >
-                        <Shield className="mr-2 h-3 w-3" />
-                        Synchroniser Rôles
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
+                        <RefreshCw className="h-4 w-4" />
+                      </button>
+                      <button
                         onClick={() => {
                           signOut()
                           setIsMenuOpen(false)
                         }}
+                        className="p-2 text-gray-400 hover:text-red-400 transition-colors duration-200 rounded-lg hover:bg-dark-800"
+                        title="Déconnexion"
                       >
-                        Déconnexion
-                      </Button>
+                        <LogOut className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 ) : (
