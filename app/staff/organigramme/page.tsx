@@ -10,12 +10,16 @@ import { Modal } from '@/components/ui/modal'
 import { Badge } from '@/components/ui/badge'
 import { Crown, Shield, Users, Settings, Plus, Edit, Trash2, ExternalLink, User } from 'lucide-react'
 
+type StaffRoleKey = 'MODERATEUR' | 'ANIMATEUR' | 'MAITRE_DU_JEU'
+
 interface StaffMember {
   id: string
   discordId: string
   name: string
   role: string
   roleName?: string
+  primaryRoleId?: string
+  roleIds?: string[]
   permissions: string[]
   description: string
   avatar: string
@@ -34,13 +38,40 @@ const DISCORD_ROLES = {
   OWNER: '1332323285303558147',
   RESPONSABLE_RP: '1386374837404176417',
   ADMINISTRATEUR: '1332323285278654473',
-  GERANT_MODERATION: '1400163557890461909',
+  GERANT_MODERATION: '1385724637337485362',
   GERANT_MJ: '1332323285278654470',
   GERANT_ANIMATION: '1332323285278654469',
   GERANT_EQUILIBRAGE: '1386709386017247254',
   MODERATEUR: '1332323285278654465',
   ANIMATEUR: '1332323285278654464',
   MAITRE_DU_JEU: '1332323285249298472'
+}
+
+const STAFF_ROLE_CONFIG = {
+  MODERATEUR: {
+    label: 'Modérateur',
+    borderClass: 'border-blue-400/30',
+    textClass: 'text-blue-300',
+    circleClass: 'border-blue-400 text-blue-400'
+  },
+  ANIMATEUR: {
+    label: 'Animateur',
+    borderClass: 'border-green-400/30',
+    textClass: 'text-green-300',
+    circleClass: 'border-green-400 text-green-400'
+  },
+  MAITRE_DU_JEU: {
+    label: 'Maître du Jeu',
+    borderClass: 'border-purple-400/30',
+    textClass: 'text-purple-300',
+    circleClass: 'border-purple-400 text-purple-400'
+  }
+} as const
+
+const ROLE_PERMISSION_HINTS: Record<StaffRoleKey, string> = {
+  MODERATEUR: 'moderation',
+  ANIMATEUR: 'animation',
+  MAITRE_DU_JEU: 'roleplay'
 }
 
 const PERMISSION_TAGS: PermissionTag[] = [
@@ -167,12 +198,13 @@ const mockStaffMembers: StaffMember[] = [
   // Staff - Modérateur (1332323285278654465)
   {
     id: '10',
-    discordId: '1332323285278654465',
+    discordId: '1400163566987903127',
     name: 'Modérateur',
     role: 'Staff',
+    primaryRoleId: DISCORD_ROLES.MODERATEUR,
     permissions: ['moderation'],
     description: 'Membre de l\'équipe de modération',
-    avatar: 'https://cdn.discordapp.com/avatars/1332323285278654465/avatar.png',
+    avatar: 'https://cdn.discordapp.com/avatars/1400163566987903127/avatar.png',
     status: 'ONLINE',
     isActive: true
   },
@@ -182,6 +214,7 @@ const mockStaffMembers: StaffMember[] = [
     discordId: '1332323285278654464',
     name: 'Animateur',
     role: 'Staff',
+    primaryRoleId: DISCORD_ROLES.ANIMATEUR,
     permissions: ['animation', 'evenements'],
     description: 'Membre de l\'équipe d\'animation',
     avatar: 'https://cdn.discordapp.com/avatars/1332323285278654464/avatar.png',
@@ -194,6 +227,7 @@ const mockStaffMembers: StaffMember[] = [
     discordId: '1332323285249298472',
     name: 'Maître du Jeu',
     role: 'Staff',
+    primaryRoleId: DISCORD_ROLES.MAITRE_DU_JEU,
     permissions: ['roleplay', 'evenements'],
     description: 'Maître du Jeu pour les événements RP',
     avatar: 'https://cdn.discordapp.com/avatars/1332323285249298472/avatar.png',
@@ -303,6 +337,22 @@ export default function OrganigrammePage() {
   }
 
   const getDisplayRole = (member: StaffMember) => member.roleName || member.role
+  const normalizeRoleName = (value?: string) =>
+    (value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+
+  const isMemberOfRole = (member: StaffMember, roleKey: StaffRoleKey) => {
+    const targetId = DISCORD_ROLES[roleKey]
+    if (member.primaryRoleId) {
+      return member.primaryRoleId === targetId
+    }
+
+    const hint = ROLE_PERMISSION_HINTS[roleKey]
+    if (hint && member.permissions?.includes(hint)) {
+      return true
+    }
+
+    return normalizeRoleName(getDisplayRole(member)) === normalizeRoleName(STAFF_ROLE_CONFIG[roleKey].label)
+  }
 
   const openEditModal = (member: StaffMember) => {
     setSelectedMember(member)
@@ -353,6 +403,15 @@ export default function OrganigrammePage() {
     hautStaff: staffMembers.filter(m => m.role === 'Haut Staff'),
     staff: staffMembers.filter(m => m.role === 'Staff')
   }
+
+  const staffRoleSummary = Object.entries(STAFF_ROLE_CONFIG).map(([key, config]) => ({
+    key,
+    label: config.label,
+    borderClass: config.borderClass,
+    textClass: config.textClass,
+    circleClass: config.circleClass,
+    count: groupedStaff.staff.filter(member => isMemberOfRole(member, key as StaffRoleKey)).length
+  }))
 
   if (isLoadingMembers) {
     return (
@@ -620,62 +679,21 @@ export default function OrganigrammePage() {
             <Settings className="h-8 w-8 text-blue-400" />
             <h2 className="text-3xl font-bold text-blue-400">Staff</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {groupedStaff.staff.map((member) => (
-              <Card key={member.id} className="glass-effect border-blue-400/30">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        className="w-12 h-12 rounded-full border-2 border-blue-400/50"
-                      />
-                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getStatusColor(member.status)} rounded-full border-2 border-dark-950`} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-white text-lg">{member.name}</CardTitle>
-                      <CardDescription className="text-blue-400 font-semibold">
-                        {getDisplayRole(member)}
-                      </CardDescription>
-                    </div>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {staffRoleSummary.map(({ key, label, count, borderClass, textClass, circleClass }) => (
+              <Card key={key} className={`glass-effect ${borderClass}`}>
+                <CardHeader className="text-center">
+                  <CardTitle className="text-white text-2xl">{label}</CardTitle>
+                  <CardDescription className={textClass}>
+                    {count > 1 ? `${count} membres` : `${count} membre`}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-gray-300 text-sm">{member.description}</p>
-                  
-                  <div className="flex flex-wrap gap-1">
-                    {member.permissions.map((permissionId) => {
-                      const permission = PERMISSION_TAGS.find(p => p.id === permissionId)
-                      return (
-                        <Badge key={permissionId} className={`${getPermissionColor(permissionId)} text-white text-xs`}>
-                          {permission?.name}
-                        </Badge>
-                      )
-                    })}
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openDiscordProfile(member.discordId)}
-                      className="flex items-center space-x-1"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      <span>Discord</span>
-                    </Button>
-                    {canManagePermissions && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditModal(member)}
-                        className="flex items-center space-x-1"
-                      >
-                        <Edit className="h-3 w-3" />
-                        <span>Modifier</span>
-                      </Button>
-                    )}
+                <CardContent>
+                  <div className="flex flex-col items-center justify-center py-6">
+                    <div className={`w-24 h-24 rounded-full border-4 flex items-center justify-center bg-dark-900/70 text-4xl font-bold ${circleClass}`}>
+                      {count}
+                    </div>
+                    <p className="text-gray-400 mt-3 text-sm">Nombre total</p>
                   </div>
                 </CardContent>
               </Card>

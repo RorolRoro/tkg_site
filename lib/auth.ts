@@ -3,8 +3,8 @@ import DiscordProvider from 'next-auth/providers/discord'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
 // IDs Discord spécifiques au serveur
-const DISCORD_SERVER_ID = '1399126776776495198'
-const STAFF_ROLE_ID = '1400163570892673048'
+const DISCORD_SERVER_ID = '1332323284825411658'
+const STAFF_ROLE_ID = '1332323285249298471'
 const JOUEUR_ROLE_ID = '1332323285249298466'
 
 export const authOptions: NextAuthOptions = {
