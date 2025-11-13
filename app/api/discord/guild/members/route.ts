@@ -17,6 +17,46 @@ const DISCORD_ROLES = {
 }
 
 const DISCORD_SERVER_ID = '1332323284825411658'
+const DISCORD_API_BASE_URL = 'https://discord.com/api/v10'
+
+async function fetchAllGuildMembers(token: string) {
+  const allMembers: any[] = []
+  let after: string | undefined
+  let keepFetching = true
+
+  while (keepFetching) {
+    const params = new URLSearchParams({ limit: '1000' })
+    if (after) {
+      params.set('after', after)
+    }
+
+    const response = await fetch(`${DISCORD_API_BASE_URL}/guilds/${DISCORD_SERVER_ID}/members?${params.toString()}`, {
+      headers: {
+        Authorization: `Bot ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Discord API error: ${response.status} ${errorText}`)
+    }
+
+    const pageMembers: any[] = await response.json()
+    allMembers.push(...pageMembers)
+
+    if (pageMembers.length < 1000) {
+      keepFetching = false
+    } else {
+      const lastMember = pageMembers[pageMembers.length - 1]
+      after = lastMember?.user?.id
+      if (!after) {
+        keepFetching = false
+      }
+    }
+  }
+
+  return allMembers
+}
 
 // Données mockées pour simuler l'API Discord
 const mockDiscordMembers = [
@@ -179,22 +219,12 @@ export async function GET() {
 
     // Essayer de récupérer les vrais membres Discord
     let discordMembers = []
-    
+
     if (process.env.DISCORD_BOT_TOKEN) {
       try {
         console.log('Tentative de récupération des membres Discord...')
-        const response = await fetch(`https://discord.com/api/v10/guilds/${DISCORD_SERVER_ID}/members?limit=1000`, {
-          headers: {
-            'Authorization': `Bot ${process.env.DISCORD_BOT_TOKEN}`,
-          },
-        })
-        
-        if (response.ok) {
-          discordMembers = await response.json()
-          console.log(`Récupéré ${discordMembers.length} membres Discord`)
-        } else {
-          console.error('Erreur API Discord:', response.status, await response.text())
-        }
+        discordMembers = await fetchAllGuildMembers(process.env.DISCORD_BOT_TOKEN)
+        console.log('Récupéré ' + discordMembers.length + ' membres Discord')
       } catch (error) {
         console.error('Erreur lors de la récupération Discord:', error)
       }
