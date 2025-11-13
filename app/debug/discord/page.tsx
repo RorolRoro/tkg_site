@@ -287,7 +287,7 @@ export default function DiscordDebugPage() {
               </p>
               <pre className="bg-dark-900 p-3 rounded mt-2 text-xs text-gray-300">
 {`DISCORD_BOT_TOKEN=your_bot_token_here
-DISCORD_SERVER_ID=1332323284825411658`}
+DISCORD_SERVER_ID=1399126776776495198`}
               </pre>
             </div>
 

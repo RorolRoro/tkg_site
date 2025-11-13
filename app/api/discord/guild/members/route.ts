@@ -7,7 +7,7 @@ const DISCORD_ROLES = {
   OWNER: '1332323285303558147',
   RESPONSABLE_RP: '1386374837404176417',
   ADMINISTRATEUR: '1332323285278654473',
-  GERANT_MODERATION: '1385724637337485362',
+  GERANT_MODERATION: '1400163557890461909',
   GERANT_MJ: '1332323285278654470',
   GERANT_ANIMATION: '1332323285278654469',
   GERANT_EQUILIBRAGE: '1386709386017247254',
@@ -16,7 +16,7 @@ const DISCORD_ROLES = {
   MAITRE_DU_JEU: '1332323285249298472'
 }
 
-const DISCORD_SERVER_ID = '1332323284825411658'
+const DISCORD_SERVER_ID = '1399126776776495198'
 
 // Données mockées pour simuler l'API Discord
 const mockDiscordMembers = [
@@ -81,13 +81,13 @@ const mockDiscordMembers = [
   // Gérant Modération
   {
     user: {
-      id: '1385724637337485362',
+      id: '1400163557890461909',
       username: 'GerantModeration',
       global_name: 'Gérant Modération',
       avatar: 'f6a1b2c3d4e5',
       discriminator: '0'
     },
-    roles: ['1385724637337485362'],
+    roles: ['1400163557890461909'],
     nick: null
   },
   // Gérant MJ

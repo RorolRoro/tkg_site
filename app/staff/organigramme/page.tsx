@@ -15,6 +15,7 @@ interface StaffMember {
   discordId: string
   name: string
   role: string
+  roleName?: string
   permissions: string[]
   description: string
   avatar: string
@@ -33,7 +34,7 @@ const DISCORD_ROLES = {
   OWNER: '1332323285303558147',
   RESPONSABLE_RP: '1386374837404176417',
   ADMINISTRATEUR: '1332323285278654473',
-  GERANT_MODERATION: '1385724637337485362',
+  GERANT_MODERATION: '1400163557890461909',
   GERANT_MJ: '1332323285278654470',
   GERANT_ANIMATION: '1332323285278654469',
   GERANT_EQUILIBRAGE: '1386709386017247254',
@@ -301,6 +302,8 @@ export default function OrganigrammePage() {
     return permission?.color || 'bg-gray-600'
   }
 
+  const getDisplayRole = (member: StaffMember) => member.roleName || member.role
+
   const openEditModal = (member: StaffMember) => {
     setSelectedMember(member)
     setIsEditModalOpen(true)
@@ -432,7 +435,7 @@ export default function OrganigrammePage() {
                   </div>
                   <CardTitle className="text-white text-xl">{member.name}</CardTitle>
                   <CardDescription className="text-yellow-400 font-semibold">
-                    {member.role}
+                    {getDisplayRole(member)}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center space-y-4">
@@ -499,7 +502,7 @@ export default function OrganigrammePage() {
                     <div>
                       <CardTitle className="text-white">{member.name}</CardTitle>
                       <CardDescription className="text-red-400 font-semibold">
-                        {member.role}
+                        {getDisplayRole(member)}
                       </CardDescription>
                     </div>
                   </div>
@@ -566,7 +569,7 @@ export default function OrganigrammePage() {
                   </div>
                   <CardTitle className="text-white text-lg">{member.name}</CardTitle>
                   <CardDescription className="text-purple-400 font-semibold">
-                    {member.role}
+                    {getDisplayRole(member)}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center space-y-3">
@@ -633,7 +636,7 @@ export default function OrganigrammePage() {
                     <div>
                       <CardTitle className="text-white text-lg">{member.name}</CardTitle>
                       <CardDescription className="text-blue-400 font-semibold">
-                        {member.role}
+                        {getDisplayRole(member)}
                       </CardDescription>
                     </div>
                   </div>
@@ -736,7 +739,7 @@ function EditMemberModal({ isOpen, onClose, member, onSave, isLoading }: EditMem
           />
           <div>
             <h3 className="text-white text-xl font-semibold">{member.name}</h3>
-            <p className="text-gray-400">{member.role}</p>
+            <p className="text-gray-400">{getDisplayRole(member)}</p>
           </div>
         </div>
 
