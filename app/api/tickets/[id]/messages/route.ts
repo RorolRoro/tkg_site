@@ -26,12 +26,19 @@ export async function POST(
       return NextResponse.json({ error: 'Ticket non trouvé' }, { status: 404 })
     }
 
+    // Vérifier si le ticket est fermé
+    if (ticket.status === 'CLOSED') {
+      return NextResponse.json({ error: 'Impossible d\'envoyer un message sur un ticket fermé' }, { status: 403 })
+    }
+
     // Créer le nouveau message
     const newMessage = {
       id: Date.now().toString(),
       content: content.trim(),
       sender: 'user' as const,
       senderName: session.user.name || 'Utilisateur',
+      senderDiscordId: session.user.id,
+      senderDiscordUsername: session.user.name || undefined,
       timestamp: new Date().toISOString(),
       attachments: attachments || []
     }

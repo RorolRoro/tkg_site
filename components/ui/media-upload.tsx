@@ -10,6 +10,7 @@ export interface MediaItem {
   url: string
   name?: string
   file?: File
+  dataUrl?: string // Base64 pour la persistance
 }
 
 interface MediaUploadProps {
@@ -26,7 +27,7 @@ export function MediaUpload({ onMediaChange, maxFiles = 10, maxSize = 50 }: Medi
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = (files: FileList | null, type: 'image' | 'video') => {
+  const handleFileSelect = async (files: FileList | null, type: 'image' | 'video') => {
     if (!files) return
 
     const validFiles: File[] = []
@@ -51,12 +52,25 @@ export function MediaUpload({ onMediaChange, maxFiles = 10, maxSize = 50 }: Medi
       return
     }
 
-    const newMedia: MediaItem[] = validFiles.map(file => ({
-      type,
-      url: URL.createObjectURL(file),
-      name: file.name,
-      file
-    }))
+    // Convertir les fichiers en base64 pour la persistance
+    const newMediaPromises = validFiles.map(async (file) => {
+      const blobUrl = URL.createObjectURL(file)
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsDataURL(file)
+      })
+      
+      return {
+        type,
+        url: blobUrl,
+        dataUrl,
+        name: file.name,
+        file
+      } as MediaItem
+    })
+
+    const newMedia = await Promise.all(newMediaPromises)
 
     const updatedMedia = [...mediaItems, ...newMedia]
     setMediaItems(updatedMedia)
@@ -103,7 +117,7 @@ export function MediaUpload({ onMediaChange, maxFiles = 10, maxSize = 50 }: Medi
     setIsDragOver(false)
   }
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
     
@@ -120,10 +134,10 @@ export function MediaUpload({ onMediaChange, maxFiles = 10, maxSize = 50 }: Medi
     })
 
     if (imageFiles.length > 0) {
-      handleFileSelect({ ...files, length: imageFiles.length } as FileList, 'image')
+      await handleFileSelect({ ...files, length: imageFiles.length } as FileList, 'image')
     }
     if (videoFiles.length > 0) {
-      handleFileSelect({ ...files, length: videoFiles.length } as FileList, 'video')
+      await handleFileSelect({ ...files, length: videoFiles.length } as FileList, 'video')
     }
   }
 
@@ -249,18 +263,30 @@ export function MediaUpload({ onMediaChange, maxFiles = 10, maxSize = 50 }: Medi
                 {item.type === 'image' && (
                   <div className="aspect-video bg-dark-700 flex items-center justify-center">
                     <img
-                      src={item.url}
+                      src={item.dataUrl || item.url}
                       alt={item.name || `Image ${index + 1}`}
                       className="max-h-full max-w-full object-contain"
+                      onError={(e) => {
+                        // Fallback sur l'URL blob si dataUrl échoue
+                        if (item.url && e.currentTarget.src !== item.url) {
+                          e.currentTarget.src = item.url
+                        }
+                      }}
                     />
                   </div>
                 )}
                 {item.type === 'video' && (
                   <div className="aspect-video bg-dark-700 flex items-center justify-center">
                     <video
-                      src={item.url}
+                      src={item.dataUrl || item.url}
                       controls
                       className="max-h-full max-w-full"
+                      onError={(e) => {
+                        // Fallback sur l'URL blob si dataUrl échoue
+                        if (item.url && e.currentTarget.src !== item.url) {
+                          e.currentTarget.src = item.url
+                        }
+                      }}
                     >
                       Votre navigateur ne supporte pas la lecture de vidéos.
                     </video>

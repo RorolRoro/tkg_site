@@ -1,5 +1,9 @@
 // Store partagé pour les tickets (en attendant une base de données)
 // Ce fichier permet de partager les tickets entre les différentes routes API
+// Les tickets sont persistés dans un fichier JSON pour survivre aux redémarrages
+
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { join } from 'path'
 
 export interface TicketData {
   id: string
@@ -8,17 +12,22 @@ export interface TicketData {
   category?: string
   type?: string
   additionalInfo?: string
+  steamId?: string
   status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED'
   userId: string
   user: {
     name: string
     email: string
+    discordId?: string
+    discordUsername?: string
   }
   messages: Array<{
     id: string
     content: string
     sender: 'user' | 'staff'
     senderName: string
+    senderDiscordId?: string
+    senderDiscordUsername?: string
     timestamp: string
     attachments?: Array<{
       type: 'image' | 'link' | 'video'
@@ -30,7 +39,10 @@ export interface TicketData {
   updatedAt: string
 }
 
-let ticketsStore: TicketData[] = [
+const TICKETS_FILE = join(process.cwd(), 'data', 'tickets.json')
+
+// Initialiser les tickets par défaut
+const defaultTickets: TicketData[] = [
   {
     id: '1',
     title: 'Candidature pour le poste de Modérateur',
@@ -86,6 +98,35 @@ let ticketsStore: TicketData[] = [
   }
 ]
 
+// Charger les tickets depuis le fichier ou utiliser les tickets par défaut
+function loadTickets(): TicketData[] {
+  try {
+    if (existsSync(TICKETS_FILE)) {
+      const data = readFileSync(TICKETS_FILE, 'utf-8')
+      return JSON.parse(data)
+    }
+  } catch (error) {
+    console.error('Erreur lors du chargement des tickets:', error)
+  }
+  return defaultTickets
+}
+
+// Sauvegarder les tickets dans le fichier
+function saveTickets(tickets: TicketData[]): void {
+  try {
+    const { mkdirSync } = require('fs')
+    const dir = join(process.cwd(), 'data')
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true })
+    }
+    writeFileSync(TICKETS_FILE, JSON.stringify(tickets, null, 2), 'utf-8')
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde des tickets:', error)
+  }
+}
+
+let ticketsStore: TicketData[] = loadTickets()
+
 export function getAllTickets(): TicketData[] {
   return ticketsStore
 }
@@ -100,6 +141,7 @@ export function getTicketsByUserId(userId: string): TicketData[] {
 
 export function addTicket(ticket: TicketData): void {
   ticketsStore.push(ticket)
+  saveTickets(ticketsStore)
 }
 
 export function updateTicket(id: string, updates: Partial<TicketData>): TicketData | null {
@@ -108,6 +150,7 @@ export function updateTicket(id: string, updates: Partial<TicketData>): TicketDa
     return null
   }
   ticketsStore[index] = { ...ticketsStore[index], ...updates, updatedAt: new Date().toISOString() }
+  saveTickets(ticketsStore)
   return ticketsStore[index]
 }
 
@@ -118,6 +161,7 @@ export function addMessageToTicket(ticketId: string, message: TicketData['messag
   }
   ticket.messages.push(message)
   ticket.updatedAt = new Date().toISOString()
+  saveTickets(ticketsStore)
   return ticket
 }
 
@@ -136,6 +180,7 @@ export function updateMessageInTicket(
   }
   message.content = content
   ticket.updatedAt = new Date().toISOString()
+  saveTickets(ticketsStore)
   return ticket
 }
 

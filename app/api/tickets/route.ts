@@ -14,7 +14,13 @@ export async function GET() {
 
     // Filtrer les tickets selon les permissions de l'utilisateur
     const allTickets = getAllTickets()
+    const userId = session.user.id || 'unknown'
     const accessibleTickets = allTickets.filter(ticket => {
+      // L'utilisateur peut toujours voir ses propres tickets
+      if (ticket.userId === userId) {
+        return true
+      }
+
       // Si le ticket n'a pas de catégorie, seuls les staffs peuvent le voir
       if (!ticket.category && !ticket.type) {
         return session.user.role === 'STAFF' || session.user.role === 'ADMIN'
@@ -34,7 +40,10 @@ export async function GET() {
       return session.user.role === 'STAFF' || session.user.role === 'ADMIN'
     })
 
-    return NextResponse.json(accessibleTickets)
+    // Filtrer les tickets fermés dans "TOUS" - seulement les tickets ouverts
+    const filteredTickets = accessibleTickets.filter(ticket => ticket.status !== 'CLOSED')
+
+    return NextResponse.json(filteredTickets)
   } catch (error) {
     console.error('Erreur lors de la récupération des tickets:', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
@@ -49,10 +58,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    const { title, description, category, additionalInfo, attachments } = await request.json()
+    const { title, description, category, additionalInfo, attachments, steamId } = await request.json()
 
-    if (!title || !description || !category) {
-      return NextResponse.json({ error: 'Données manquantes (titre, description et catégorie requis)' }, { status: 400 })
+    if (!title || !description || !category || !steamId) {
+      return NextResponse.json({ error: 'Données manquantes (titre, description, catégorie et Steam ID requis)' }, { status: 400 })
     }
 
     // Vérifier que la catégorie existe
@@ -67,11 +76,14 @@ export async function POST(request: NextRequest) {
       description,
       category: category as TicketCategory,
       additionalInfo: additionalInfo || '',
+      steamId: steamId || '',
       status: 'OPEN' as const,
       userId: session.user.id || 'unknown',
       user: {
         name: session.user.name || 'Utilisateur',
-        email: session.user.email || 'email@example.com'
+        email: session.user.email || 'email@example.com',
+        discordId: session.user.id,
+        discordUsername: session.user.name || undefined
       },
       messages: [
         {
@@ -79,6 +91,8 @@ export async function POST(request: NextRequest) {
           content: description + (additionalInfo ? `\n\nInformations supplémentaires:\n${additionalInfo}` : ''),
           sender: 'user' as const,
           senderName: session.user.name || 'Utilisateur',
+          senderDiscordId: session.user.id,
+          senderDiscordUsername: session.user.name,
           timestamp: new Date().toISOString(),
           attachments: attachments || []
         }

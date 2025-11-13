@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Modal } from '@/components/ui/modal'
 import { Badge } from '@/components/ui/badge'
 import { PhotoUpload } from '@/components/ui/photo-upload'
+import { MediaUpload, type MediaItem } from '@/components/ui/media-upload'
 import { Ticket, Clock, CheckCircle, XCircle, MessageSquare, User, Calendar, Plus, Image, Link, Send, Play, Square, Edit } from 'lucide-react'
 import { TICKET_CATEGORIES } from '@/lib/ticket-permissions'
 
@@ -16,9 +17,11 @@ interface TicketMessage {
   content: string
   sender: 'user' | 'staff'
   senderName: string
+  senderDiscordId?: string
+  senderDiscordUsername?: string
   timestamp: string
   attachments?: {
-    type: 'image' | 'link'
+    type: 'image' | 'link' | 'video'
     url: string
     name?: string
   }[]
@@ -30,10 +33,13 @@ interface TicketData {
   description: string
   category?: string
   type?: 'CANDIDATURE_STAFF' | 'CANDIDATURE_CLAN' | string
+  steamId?: string
   status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED'
   user: {
     name: string
     email: string
+    discordId?: string
+    discordUsername?: string
   }
   messages: TicketMessage[]
   createdAt: string
@@ -48,10 +54,12 @@ export default function StaffTicketsPage() {
   const [newMessage, setNewMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [showPhotoUpload, setShowPhotoUpload] = useState(false)
+  const [staffMediaItems, setStaffMediaItems] = useState<MediaItem[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [showClosedTickets, setShowClosedTickets] = useState(false)
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
   const [editingMessageContent, setEditingMessageContent] = useState('')
+  const [expandedImage, setExpandedImage] = useState<string | null>(null)
 
   useEffect(() => {
     fetchTickets()
@@ -74,6 +82,12 @@ export default function StaffTicketsPage() {
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedTicket) return
 
+    // Vérifier si le ticket est fermé
+    if (selectedTicket.status === 'CLOSED') {
+      alert('Impossible d\'envoyer un message sur un ticket fermé')
+      return
+    }
+
     try {
       const response = await fetch(`/api/staff/tickets/${selectedTicket.id}/messages`, {
         method: 'POST',
@@ -82,6 +96,11 @@ export default function StaffTicketsPage() {
         },
         body: JSON.stringify({
           content: newMessage,
+          attachments: staffMediaItems.map(item => ({
+            type: item.type,
+            url: item.dataUrl || item.url, // Utiliser dataUrl (base64) pour la persistance
+            name: item.name
+          }))
         }),
       })
 
@@ -92,9 +111,15 @@ export default function StaffTicketsPage() {
           messages: [...prev.messages, message]
         } : null)
         setNewMessage('')
+        setStaffMediaItems([])
+        fetchTickets()
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Erreur lors de l\'envoi du message')
       }
     } catch (error) {
       console.error('Erreur lors de l\'envoi du message:', error)
+      alert('Erreur lors de l\'envoi du message')
     }
   }
 
@@ -271,17 +296,23 @@ export default function StaffTicketsPage() {
     const openTickets = filtered.filter(ticket => ticket.status !== 'CLOSED')
     const closedTickets = filtered.filter(ticket => ticket.status === 'CLOSED')
 
-    return { openTickets, closedTickets }
+    return { openTickets, closedTickets, allFiltered: filtered }
   }
 
   // Obtenir les catégories uniques des tickets
   const uniqueCategories = Array.from(new Set(tickets.map(t => t.category || t.type).filter(Boolean))) as string[]
   const categories = [
-    { id: 'all', label: 'Tous', count: tickets.length },
+    { 
+      id: 'all', 
+      label: 'Tous', 
+      count: tickets.filter(t => t.status !== 'CLOSED').length
+    },
     ...uniqueCategories.map(cat => ({
       id: cat,
       label: cat,
-      count: tickets.filter(t => (t.category || t.type) === cat).length
+      count: showClosedTickets
+        ? tickets.filter(t => (t.category || t.type) === cat && t.status !== 'CLOSED').length
+        : tickets.filter(t => (t.category || t.type) === cat).length
     }))
   ]
 
@@ -437,7 +468,14 @@ export default function StaffTicketsPage() {
             return (
               <>
                 {/* Open Tickets */}
-                {openTickets.map((ticket) => (
+                {openTickets.length > 0 && (
+                <div>
+                  <div className="flex items-center space-x-3 mb-4">
+                    <h3 className="text-white text-lg font-semibold">Tickets Ouverts</h3>
+                    <Badge variant="secondary">{openTickets.length}</Badge>
+                  </div>
+                  <div className="space-y-4">
+                    {openTickets.map((ticket) => (
                   <Card 
                     key={ticket.id} 
                     className="glass-effect hover:shadow-glow transition-all duration-300 cursor-pointer"
@@ -487,7 +525,15 @@ export default function StaffTicketsPage() {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                    ))}
+                  </div>
+                </div>
+                )}
+
+                {/* Separator */}
+                {openTickets.length > 0 && showClosedTickets && closedTickets.length > 0 && (
+                  <div className="my-8 border-t border-dark-700"></div>
+                )}
 
                 {/* Closed Tickets Section */}
                 {showClosedTickets && closedTickets.length > 0 && (
@@ -572,8 +618,21 @@ export default function StaffTicketsPage() {
                   </div>
                   <div>
                     <span className="text-gray-400">Utilisateur:</span>
-                    <span className="text-white ml-2">{selectedTicket.user.name}</span>
+                    <span className="text-white ml-2">
+                      {selectedTicket.user.discordUsername || selectedTicket.user.name}
+                      {selectedTicket.user.discordId && (
+                        <span className="text-xs opacity-60 ml-1">
+                          ({selectedTicket.user.discordId})
+                        </span>
+                      )}
+                    </span>
                   </div>
+                  {selectedTicket.steamId && (
+                    <div>
+                      <span className="text-gray-400">Steam ID:</span>
+                      <span className="text-white ml-2">{selectedTicket.steamId}</span>
+                    </div>
+                  )}
                   <div>
                     <span className="text-gray-400">Créé le:</span>
                     <span className="text-white ml-2">
@@ -599,9 +658,16 @@ export default function StaffTicketsPage() {
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2 flex-wrap">
                             <User className="h-3 w-3" />
-                            <span className="text-xs font-medium">{message.senderName}</span>
+                            <span className="text-xs font-medium">
+                              {message.senderDiscordUsername || message.senderName}
+                              {message.senderDiscordId && (
+                                <span className="text-xs opacity-60 ml-1">
+                                  ({message.senderDiscordId})
+                                </span>
+                              )}
+                            </span>
                             <span className="text-xs opacity-70">
                               {new Date(message.timestamp).toLocaleDateString('fr-FR')} à {new Date(message.timestamp).toLocaleTimeString('fr-FR')}
                             </span>
@@ -676,22 +742,42 @@ export default function StaffTicketsPage() {
                         
                         {/* Attachments */}
                         {message.attachments && message.attachments.length > 0 && (
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-3 space-y-2">
                             {message.attachments.map((attachment, index) => (
-                              <div key={index} className="flex items-center space-x-2">
-                                {attachment.type === 'image' ? (
-                                  <Image className="h-3 w-3" />
-                                ) : (
-                                  <Link className="h-3 w-3" />
+                              <div key={index}>
+                                {attachment.type === 'image' && (
+                                  <div className="rounded-lg overflow-hidden cursor-pointer" onClick={() => setExpandedImage(attachment.url)}>
+                                    <img
+                                      src={attachment.url}
+                                      alt={attachment.name || `Image ${index + 1}`}
+                                      className="max-w-full max-h-64 object-contain hover:opacity-90 transition-opacity"
+                                    />
+                                  </div>
                                 )}
-                                <a
-                                  href={attachment.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-xs underline hover:no-underline"
-                                >
-                                  {attachment.name || 'Pièce jointe'}
-                                </a>
+                                {attachment.type === 'video' && (
+                                  <div className="rounded-lg overflow-hidden">
+                                    <video
+                                      src={attachment.url}
+                                      controls
+                                      className="max-w-full max-h-64"
+                                    >
+                                      Votre navigateur ne supporte pas la lecture de vidéos.
+                                    </video>
+                                  </div>
+                                )}
+                                {attachment.type === 'link' && (
+                                  <div className="flex items-center space-x-2">
+                                    <Link className="h-4 w-4" />
+                                    <a
+                                      href={attachment.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs underline hover:no-underline break-all"
+                                    >
+                                      {attachment.name || attachment.url}
+                                    </a>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -703,6 +789,11 @@ export default function StaffTicketsPage() {
               </div>
 
               {/* Message Input */}
+              {selectedTicket.status === 'CLOSED' ? (
+                <div className="bg-red-600/20 border border-red-600/50 rounded-lg p-4 text-center">
+                  <p className="text-red-400">Ce ticket est fermé. Vous ne pouvez plus envoyer de messages.</p>
+                </div>
+              ) : (
               <div className="space-y-3">
                 <div className="flex space-x-2">
                   <Textarea
@@ -714,48 +805,23 @@ export default function StaffTicketsPage() {
                   />
                 </div>
                 
-                {/* Photo Upload */}
-                {showPhotoUpload && (
-                  <div className="bg-dark-800/50 p-4 rounded-lg">
-                    <PhotoUpload onUpload={handlePhotoUpload} />
-                  </div>
-                )}
+                {/* Media Upload */}
+                <div className="bg-dark-800/30 rounded-lg p-4">
+                  <MediaUpload
+                    onMediaChange={setStaffMediaItems}
+                    maxFiles={10}
+                    maxSize={50}
+                  />
+                </div>
                 
                 <div className="flex items-center justify-between">
                   <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center space-x-1"
-                      onClick={() => setShowPhotoUpload(!showPhotoUpload)}
-                    >
-                      <Image className="h-4 w-4" />
-                      <span>Photo</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center space-x-1"
-                      onClick={() => {
-                        const link = prompt('Entrez l\'URL du lien:')
-                        if (link) {
-                          if (link.startsWith('http://') || link.startsWith('https://') || link.startsWith('steam://')) {
-                            setNewMessage(prev => prev + (prev ? '\n' : '') + link)
-                          } else {
-                            setNewMessage(prev => prev + (prev ? '\n' : '') + `🔗 ${link}`)
-                          }
-                        }
-                      }}
-                    >
-                      <Link className="h-4 w-4" />
-                      <span>Lien</span>
-                    </Button>
                   </div>
                   
                   <div className="flex space-x-2">
                     <Button
                       onClick={sendMessage}
-                      disabled={!newMessage.trim()}
+                      disabled={!newMessage.trim() && staffMediaItems.length === 0}
                       variant="glow"
                       className="flex items-center space-x-2"
                     >
@@ -765,6 +831,7 @@ export default function StaffTicketsPage() {
                   </div>
                 </div>
               </div>
+              )}
 
               {/* Staff Actions */}
               <div className="flex gap-3 pt-4 border-t border-dark-700">
@@ -794,6 +861,24 @@ export default function StaffTicketsPage() {
                   <span>Fermer le Ticket</span>
                 </Button>
               </div>
+            </div>
+          </Modal>
+        )}
+
+        {/* Image Expansion Modal */}
+        {expandedImage && (
+          <Modal
+            isOpen={!!expandedImage}
+            onClose={() => setExpandedImage(null)}
+            title="Image"
+            className="max-w-4xl"
+          >
+            <div className="p-4">
+              <img
+                src={expandedImage}
+                alt="Image agrandie"
+                className="max-w-full max-h-[80vh] object-contain mx-auto"
+              />
             </div>
           </Modal>
         )}

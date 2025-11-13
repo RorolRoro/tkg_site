@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getTicketsByUserId } from '@/lib/tickets-store'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
@@ -13,7 +13,17 @@ export async function GET() {
 
     // Récupérer les tickets de l'utilisateur connecté
     const userId = session.user.id || 'unknown'
-    const userTickets = getTicketsByUserId(userId)
+    let userTickets = getTicketsByUserId(userId)
+    
+    // Vérifier si on doit inclure les tickets fermés
+    const { searchParams } = new URL(request.url)
+    const includeClosed = searchParams.get('includeClosed') === 'true'
+    
+    // Filtrer les tickets fermés (sauf si explicitement demandé)
+    // Les utilisateurs peuvent toujours voir leurs tickets ouverts et en cours
+    if (!includeClosed) {
+      userTickets = userTickets.filter(ticket => ticket.status !== 'CLOSED')
+    }
     
     // Transformer les messages pour remplacer "Vous" par le nom de l'utilisateur
     const formattedTickets = userTickets.map(ticket => ({

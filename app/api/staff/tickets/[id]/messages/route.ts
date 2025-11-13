@@ -1,53 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-
-// Données mockées pour les messages staff (même array que dans user/tickets)
-let userTickets: any[] = [
-  {
-    id: '1',
-    title: 'Candidature pour le poste de Modérateur',
-    description: 'Bonjour, je souhaite postuler pour le poste de modérateur. J\'ai de l\'expérience dans la modération de serveurs Discord et je suis très actif sur le serveur depuis plusieurs mois.',
-    type: 'CANDIDATURE_STAFF',
-    status: 'OPEN',
-    messages: [
-      {
-        id: '1',
-        content: 'Bonjour, je souhaite postuler pour le poste de modérateur. J\'ai de l\'expérience dans la modération de serveurs Discord et je suis très actif sur le serveur depuis plusieurs mois.',
-        sender: 'user',
-        senderName: 'Alexandre K.',
-        timestamp: new Date('2024-01-15T10:30:00Z').toISOString()
-      },
-      {
-        id: '2',
-        content: 'Merci pour votre candidature. Nous allons examiner votre dossier et vous recontacterons sous peu. Pouvez-vous nous donner plus de détails sur votre expérience ?',
-        sender: 'staff',
-        senderName: 'Staff Tokyo Ghoul RP',
-        timestamp: new Date('2024-01-15T14:20:00Z').toISOString()
-      }
-    ],
-    createdAt: new Date('2024-01-15T10:30:00Z').toISOString(),
-    updatedAt: new Date('2024-01-15T14:20:00Z').toISOString()
-  },
-  {
-    id: '2',
-    title: 'Demande d\'intégration au clan Aogiri Tree',
-    description: 'Salut ! Mon personnage ghoul souhaite rejoindre le clan Aogiri Tree. Il a un passé violent et partage les idéaux du clan.',
-    type: 'CANDIDATURE_CLAN',
-    status: 'IN_PROGRESS',
-    messages: [
-      {
-        id: '3',
-        content: 'Salut ! Mon personnage ghoul souhaite rejoindre le clan Aogiri Tree. Il a un passé violent et partage les idéaux du clan.',
-        sender: 'user',
-        senderName: 'Marie L.',
-        timestamp: new Date('2024-01-14T15:45:00Z').toISOString()
-      }
-    ],
-    createdAt: new Date('2024-01-14T15:45:00Z').toISOString(),
-    updatedAt: new Date('2024-01-14T15:45:00Z').toISOString()
-  }
-]
+import { getTicketById, addMessageToTicket } from '@/lib/tickets-store'
 
 export async function POST(
   request: NextRequest,
@@ -61,7 +15,7 @@ export async function POST(
     }
 
     // Seuls les membres du staff peuvent envoyer des messages
-    if (session.user.role !== 'STAFF') {
+    if (session.user.role !== 'STAFF' && session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
@@ -72,9 +26,14 @@ export async function POST(
     }
 
     // Trouver le ticket
-    const ticketIndex = userTickets.findIndex(t => t.id === params.id)
-    if (ticketIndex === -1) {
+    const ticket = getTicketById(params.id)
+    if (!ticket) {
       return NextResponse.json({ error: 'Ticket non trouvé' }, { status: 404 })
+    }
+
+    // Vérifier si le ticket est fermé
+    if (ticket.status === 'CLOSED') {
+      return NextResponse.json({ error: 'Impossible d\'envoyer un message sur un ticket fermé' }, { status: 403 })
     }
 
     // Créer le nouveau message
@@ -83,13 +42,17 @@ export async function POST(
       content: content.trim(),
       sender: 'staff' as const,
       senderName: session.user.name || 'Staff',
+      senderDiscordId: session.user.id,
+      senderDiscordUsername: session.user.name || undefined,
       timestamp: new Date().toISOString(),
       attachments: attachments || []
     }
 
     // Ajouter le message au ticket
-    userTickets[ticketIndex].messages.push(newMessage)
-    userTickets[ticketIndex].updatedAt = new Date().toISOString()
+    const updatedTicket = addMessageToTicket(params.id, newMessage)
+    if (!updatedTicket) {
+      return NextResponse.json({ error: 'Erreur lors de l\'ajout du message' }, { status: 500 })
+    }
 
     return NextResponse.json(newMessage, { status: 201 })
   } catch (error) {

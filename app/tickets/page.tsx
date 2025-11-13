@@ -47,7 +47,8 @@ export default function TicketsPage() {
     title: '',
     description: '',
     category: '' as TicketCategory | '',
-    additionalInfo: ''
+    additionalInfo: '',
+    steamId: ''
   })
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -62,20 +63,29 @@ export default function TicketsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPhotoUpload, setShowPhotoUpload] = useState(false)
   const [showClosedTickets, setShowClosedTickets] = useState(false)
+  const [expandedImage, setExpandedImage] = useState<string | null>(null)
 
   useEffect(() => {
     if (activeTab === 'my-tickets' && session) {
       fetchUserTickets()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, session])
 
-  const fetchUserTickets = async () => {
+  const fetchUserTickets = async (includeClosed = false) => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/user/tickets')
+      const response = await fetch(`/api/user/tickets?includeClosed=${includeClosed}`)
       if (response.ok) {
         const data = await response.json()
         setTickets(data)
+        // Préserver le ticket sélectionné après le rechargement
+        if (selectedTicket) {
+          const updatedTicket = data.find((t: UserTicket) => t.id === selectedTicket.id)
+          if (updatedTicket) {
+            setSelectedTicket(updatedTicket)
+          }
+        }
       }
     } catch (error) {
       console.error('Erreur lors du chargement des tickets:', error)
@@ -114,9 +124,10 @@ export default function TicketsPage() {
           description: formData.description,
           category: formData.category,
           additionalInfo: formData.additionalInfo,
+          steamId: formData.steamId,
           attachments: mediaItems.map(item => ({
             type: item.type,
-            url: item.url,
+            url: item.dataUrl || item.url, // Utiliser dataUrl (base64) pour la persistance
             name: item.name
           }))
         }),
@@ -128,7 +139,8 @@ export default function TicketsPage() {
           title: '',
           description: '',
           category: '' as TicketCategory | '',
-          additionalInfo: ''
+          additionalInfo: '',
+          steamId: ''
         })
         setMediaItems([])
         // Basculer vers l'onglet mes tickets et rafraîchir
@@ -149,6 +161,12 @@ export default function TicketsPage() {
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedTicket) return
 
+    // Vérifier si le ticket est fermé
+    if (selectedTicket.status === 'CLOSED') {
+      alert('Impossible d\'envoyer un message sur un ticket fermé')
+      return
+    }
+
     try {
       const response = await fetch(`/api/tickets/${selectedTicket.id}/messages`, {
         method: 'POST',
@@ -162,14 +180,27 @@ export default function TicketsPage() {
 
       if (response.ok) {
         const message = await response.json()
+        // Mise à jour optimiste du ticket sélectionné
         setSelectedTicket(prev => prev ? {
           ...prev,
           messages: [...prev.messages, message]
         } : null)
+        // Mise à jour optimiste de la liste des tickets
+        setTickets(prev => prev.map(ticket => 
+          ticket.id === selectedTicket.id
+            ? { ...ticket, messages: [...ticket.messages, message] }
+            : ticket
+        ))
         setNewMessage('')
+        // Ne pas recharger immédiatement - la mise à jour optimiste suffit
+        // Le rechargement se fera lors de la prochaine ouverture du modal ou changement d'onglet
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Erreur lors de l\'envoi du message')
       }
     } catch (error) {
       console.error('Erreur lors de l\'envoi du message:', error)
+      alert('Erreur lors de l\'envoi du message')
     }
   }
 
@@ -197,10 +228,16 @@ export default function TicketsPage() {
 
         if (response.ok) {
           const message = await response.json()
+          // Mise à jour optimiste
           setSelectedTicket(prev => prev ? {
             ...prev,
             messages: [...prev.messages, message]
           } : null)
+          setTickets(prev => prev.map(ticket => 
+            ticket.id === selectedTicket?.id
+              ? { ...ticket, messages: [...ticket.messages, message] }
+              : ticket
+          ))
           setNewMessage('')
           setShowPhotoUpload(false)
         }
@@ -422,6 +459,23 @@ export default function TicketsPage() {
                       </p>
                     </div>
 
+                    {/* Steam ID */}
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        Steam ID <span className="text-red-400">*</span>
+                      </label>
+                      <Input
+                        value={formData.steamId}
+                        onChange={(e) => setFormData({ ...formData, steamId: e.target.value })}
+                        placeholder="Ex: 76561198000000000"
+                        required
+                        className="bg-dark-800/50 border-dark-700 text-white"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Votre identifiant Steam (obligatoire pour le traitement de votre ticket)
+                      </p>
+                    </div>
+
                     {/* Informations supplémentaires */}
                     <div>
                       <label className="block text-sm font-medium text-white mb-2">
@@ -472,7 +526,8 @@ export default function TicketsPage() {
                             title: '',
                             description: '',
                             category: '' as TicketCategory | '',
-                            additionalInfo: ''
+                            additionalInfo: '',
+                            steamId: ''
                           })
                           setMediaItems([])
                         }}
@@ -485,7 +540,7 @@ export default function TicketsPage() {
                         type="submit"
                         variant="glow"
                         className="flex-1 group"
-                        disabled={isSubmitting || !formData.title.trim() || !formData.description.trim() || !formData.category}
+                        disabled={isSubmitting || !formData.title.trim() || !formData.description.trim() || !formData.category || !formData.steamId.trim()}
                       >
                         {isSubmitting ? (
                           <>
@@ -571,7 +626,11 @@ export default function TicketsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowClosedTickets(!showClosedTickets)}
+                    onClick={() => {
+                      const newValue = !showClosedTickets
+                      setShowClosedTickets(newValue)
+                      fetchUserTickets(newValue)
+                    }}
                     className="flex items-center space-x-2"
                   >
                     <span>{showClosedTickets ? 'Masquer' : 'Afficher'} les tickets fermés</span>
@@ -773,9 +832,16 @@ export default function TicketsPage() {
                                     : 'bg-dark-700 text-gray-300'
                                 }`}
                               >
-                                <div className="flex items-center space-x-2 mb-1">
+                                <div className="flex items-center space-x-2 mb-1 flex-wrap">
                                   <User className="h-3 w-3" />
-                                  <span className="text-xs font-medium">{message.senderName}</span>
+                                  <span className="text-xs font-medium">
+                                    {message.senderDiscordUsername || message.senderName}
+                                    {message.senderDiscordId && (
+                                      <span className="text-xs opacity-60 ml-1">
+                                        ({message.senderDiscordId})
+                                      </span>
+                                    )}
+                                  </span>
                                   <span className="text-xs opacity-70">
                                     {new Date(message.timestamp).toLocaleDateString('fr-FR')} à {new Date(message.timestamp).toLocaleTimeString('fr-FR')}
                                   </span>
@@ -814,11 +880,11 @@ export default function TicketsPage() {
                                     {message.attachments.map((attachment, index) => (
                                       <div key={index}>
                                         {attachment.type === 'image' && (
-                                          <div className="rounded-lg overflow-hidden">
+                                          <div className="rounded-lg overflow-hidden cursor-pointer" onClick={() => setExpandedImage(attachment.url)}>
                                             <img
                                               src={attachment.url}
                                               alt={attachment.name || `Image ${index + 1}`}
-                                              className="max-w-full max-h-64 object-contain"
+                                              className="max-w-full max-h-64 object-contain hover:opacity-90 transition-opacity"
                                             />
                                           </div>
                                         )}
@@ -857,6 +923,11 @@ export default function TicketsPage() {
                       </div>
 
                       {/* Message Input */}
+                      {selectedTicket.status === 'CLOSED' ? (
+                        <div className="bg-red-600/20 border border-red-600/50 rounded-lg p-4 text-center">
+                          <p className="text-red-400">Ce ticket est fermé. Vous ne pouvez plus envoyer de messages.</p>
+                        </div>
+                      ) : (
                       <div className="space-y-3">
                         <div className="flex space-x-2">
                           <Textarea
@@ -917,6 +988,25 @@ export default function TicketsPage() {
                           </Button>
                         </div>
                       </div>
+                      )}
+                    </div>
+                  </Modal>
+                )}
+
+                {/* Image Expansion Modal */}
+                {expandedImage && (
+                  <Modal
+                    isOpen={!!expandedImage}
+                    onClose={() => setExpandedImage(null)}
+                    title="Image"
+                    className="max-w-4xl"
+                  >
+                    <div className="p-4">
+                      <img
+                        src={expandedImage}
+                        alt="Image agrandie"
+                        className="max-w-full max-h-[80vh] object-contain mx-auto"
+                      />
                     </div>
                   </Modal>
                 )}
