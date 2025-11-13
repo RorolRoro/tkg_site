@@ -513,7 +513,7 @@ export default function LorePage() {
                   <Card className="border-white/10 bg-dark-900/70 lg:col-span-2">
                     <CardHeader>
                       <CardTitle className="text-xl text-white">Moments determinants</CardTitle>
-                      <CardDescription className="text-gray-300">Balises pour retracer l'influence du clan.</CardDescription>
+                      <CardDescription className="text-gray-300">Balises pour retracer l&apos;influence du clan.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {activeClan.timeline.map((step) => (
@@ -529,7 +529,7 @@ export default function LorePage() {
                     <CardHeader>
                       <CardTitle className="text-xl text-white">Logo du clan</CardTitle>
                       <CardDescription className="text-gray-300">
-                        {activeClan.genealogyImage ? "" : activeClan.genealogyNote ?? "Ajoutez l'arbre genealogique."}
+                        {activeClan.genealogyImage ? "" : activeClan.genealogyNote ?? "Ajoutez l&apos;arbre genealogique."}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -543,7 +543,7 @@ export default function LorePage() {
                             className="object-cover"
                           />
                         ) : (
-                          <span>Zone reservee pour importer ou dessiner l'arbre.</span>
+                          <span>Zone reservee pour importer ou dessiner l&apos;arbre.</span>
                         )}
                       </div>
                     </CardContent>
@@ -562,7 +562,7 @@ export default function LorePage() {
                 <p className="mb-4 text-sm uppercase tracking-[0.4em] text-primary-300">Lore officiel du serveur</p>
                 <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl">Lignes de sang, pactes oublies et renaissance du Roi Souterrain.</h1>
                 <p className="mt-6 max-w-3xl text-lg text-gray-300">
-                  Cette page rassemble l'ensemble du lore pour etre lu comme un roman chronologique. Chaque chapitre garde l'elegance du recit original
+                  Cette page rassemble l&apos;ensemble du lore pour etre lu comme un roman chronologique. Chaque chapitre garde l&apos;elegance du recit original
                   tout en offrant des reperes visuels et temporels afin que rien ne rompe la fluidite de la lecture.
                 </p>
               </div>
@@ -571,20 +571,20 @@ export default function LorePage() {
             <div className="mt-12 grid gap-6">
               <Card className="border-white/5 bg-dark-900/70">
                 <CardHeader>
-                  <CardTitle className="text-2xl text-white">Prologue - Le Japon n'a pas toujours ete lumiere</CardTitle>
+                  <CardTitle className="text-2xl text-white">Prologue - Le Japon n&apos;a pas toujours ete lumiere</CardTitle>
                   <CardDescription className="text-base leading-relaxed text-gray-300">
-                    "Le Japon n'a pas toujours ete un empire de lumiere. Il fut un temps ou les Dieux se taisaient et ou les hommes affrontaient des
-                    creatures dont les noms ont ete effaces des chroniques."
+                    &quot;Le Japon n&apos;a pas toujours ete un empire de lumiere. Il fut un temps ou les Dieux se taisaient et ou les hommes affrontaient des
+                    creatures dont les noms ont ete effaces des chroniques.&quot;
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 text-gray-300">
                   <p>
                     Le clan Washu se distingue des autres par un savoir interdit et une obsession pour la veritable nature humaine. Leur ascension
-                    rapide et brutale est enveloppee de rituels clandestins et de pactes avec des divinites que l'on croyait disparues.
+                    rapide et brutale est enveloppee de rituels clandestins et de pactes avec des divinites que l&apos;on croyait disparues.
                   </p>
                   <p>
-                    Lorsque les seigneurs de guerre s'epuisent, les Washu se tournent vers les forces qui se cachent sous les temples. Certains
-                    pretendent qu'ils ont trouve un moyen de se nourrir autrement que les hommes, d'autres assurent qu'ils conversent avec des
+                    Lorsque les seigneurs de guerre s&apos;epuisent, les Washu se tournent vers les forces qui se cachent sous les temples. Certains
+                    pretendent qu&apos;ils ont trouve un moyen de se nourrir autrement que les hommes, d&apos;autres assurent qu&apos;ils conversent avec des
                     divinites mortes depuis longtemps.
                   </p>
                 </CardContent>
@@ -640,7 +640,7 @@ export default function LorePage() {
                 <CardHeader>
                   <CardTitle className="text-2xl text-white">{presentDay.title}</CardTitle>
                   <CardDescription className="text-base leading-relaxed text-gray-300">
-                    Suite aux expeditions du CCG et d'allies clandestins, Shinjuku renait lentement. Mais sous la surface, chaque faction guette le
+                    Suite aux expeditions du CCG et d&apos;allies clandestins, Shinjuku renait lentement. Mais sous la surface, chaque faction guette le
                     retour du Roi Souterrain.
                   </CardDescription>
                 </CardHeader>
