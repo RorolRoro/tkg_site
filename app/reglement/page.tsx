@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, ChevronRight, Shield, Users, MessageSquare, Sword, Heart, AlertTriangle, BookOpen, Gavel } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { ChevronDown, ChevronRight, Shield, Users, MessageSquare, Sword, Heart, AlertTriangle, BookOpen, Gavel, Search, X } from 'lucide-react'
 
 interface RuleSection {
   id: string
@@ -16,6 +17,7 @@ interface RuleSection {
 
 export default function ReglementPage() {
   const [activeTab, setActiveTab] = useState('reglement-rp')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const tabs = [
     { id: 'reglement-rp', label: 'Règlement RP', icon: Sword },
@@ -637,6 +639,38 @@ export default function ReglementPage() {
     }
   }
 
+  const filteredSections = useMemo(() => {
+    let sections: RuleSection[]
+    switch (activeTab) {
+      case 'reglement-rp':
+        sections = sectionsReglementRP
+        break
+      case 'reglement-general':
+        sections = sectionsReglementGeneral
+        break
+      case 'lexique-rp':
+        sections = sectionsLexiqueRP
+        break
+      default:
+        sections = sectionsReglementRP
+    }
+    
+    if (!searchQuery.trim()) {
+      return sections
+    }
+    
+    const query = searchQuery.toLowerCase()
+    return sections.filter(section => {
+      const titleMatch = section.title.toLowerCase().includes(query)
+      const descMatch = section.description.toLowerCase().includes(query)
+      const interdictionsMatch = section.interdictions.some(i => i.toLowerCase().includes(query))
+      const autorisationsMatch = section.autorisations.some(a => a.toLowerCase().includes(query))
+      
+      return titleMatch || descMatch || interdictionsMatch || autorisationsMatch
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, searchQuery])
+
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
 
   const toggleSection = (sectionId: string) => {
@@ -648,6 +682,26 @@ export default function ReglementPage() {
         newSet.add(sectionId)
       }
       return newSet
+    })
+  }
+
+  // Fonction pour surligner le texte recherché
+  const highlightText = (text: string, query: string) => {
+    if (!query.trim()) {
+      return text
+    }
+
+    const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'))
+    
+    return parts.map((part, index) => {
+      if (part.toLowerCase() === query.toLowerCase()) {
+        return (
+          <mark key={index} className="bg-yellow-400/30 text-yellow-200 px-1 rounded">
+            {part}
+          </mark>
+        )
+      }
+      return part
     })
   }
 
@@ -665,12 +719,15 @@ export default function ReglementPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
           {tabs.map((tab) => (
             <Button
               key={tab.id}
               variant={activeTab === tab.id ? 'glow' : 'outline'}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id)
+                setSearchQuery('')
+              }}
               className="flex items-center space-x-2"
             >
               <tab.icon className="h-4 w-4" />
@@ -679,9 +736,47 @@ export default function ReglementPage() {
           ))}
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-8 max-w-2xl mx-auto">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Rechercher dans le règlement..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10 bg-dark-800/50 border-dark-700 text-white placeholder-gray-500 focus:border-primary-500 focus:ring-primary-500"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <p className="text-sm text-gray-400 mt-2 text-center">
+              {filteredSections.length} résultat{filteredSections.length > 1 ? 's' : ''} trouvé{filteredSections.length > 1 ? 's' : ''}
+            </p>
+          )}
+        </div>
+
         {/* Rules Sections */}
         <div className="space-y-6">
-          {getCurrentSections().map((section) => {
+          {filteredSections.length === 0 && searchQuery ? (
+            <Card className="glass-effect">
+              <CardContent className="p-12 text-center">
+                <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-white text-xl mb-2">Aucun résultat</h3>
+                <p className="text-gray-400">
+                  Aucune section ne correspond à votre recherche &quot;{searchQuery}&quot;
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredSections.map((section) => {
             const isExpanded = expandedSections.has(section.id)
             return (
               <Card key={section.id} className="glass-effect border-l-4 border-l-primary-600">
@@ -690,7 +785,9 @@ export default function ReglementPage() {
                     className="flex items-center justify-between cursor-pointer hover:bg-dark-800/50 p-2 rounded transition-colors"
                     onClick={() => toggleSection(section.id)}
                   >
-                    <CardTitle className="text-white text-xl">{section.title}</CardTitle>
+                    <CardTitle className="text-white text-xl">
+                      {searchQuery ? highlightText(section.title, searchQuery) : section.title}
+                    </CardTitle>
                     {isExpanded ? (
                       <ChevronDown className="h-5 w-5 text-gray-400" />
                     ) : (
@@ -702,7 +799,7 @@ export default function ReglementPage() {
                   <CardContent>
                     <div className="space-y-4">
                       <p className="text-gray-300 leading-relaxed whitespace-pre-line">
-                        {section.description}
+                        {searchQuery ? highlightText(section.description, searchQuery) : section.description}
                       </p>
                       
                       {section.interdictions.length > 0 && (
@@ -715,7 +812,9 @@ export default function ReglementPage() {
                             {section.interdictions.map((interdiction, index) => (
                               <li key={index} className="flex items-start space-x-3">
                                 <div className="w-2 h-2 bg-red-400 rounded-full mt-2 flex-shrink-0" />
-                                <span className="text-gray-300 text-sm">{interdiction}</span>
+                                <span className="text-gray-300 text-sm">
+                                  {searchQuery ? highlightText(interdiction, searchQuery) : interdiction}
+                                </span>
                               </li>
                             ))}
                           </ul>
@@ -732,7 +831,9 @@ export default function ReglementPage() {
                             {section.autorisations.map((autorisation, index) => (
                               <li key={index} className="flex items-start space-x-3">
                                 <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0" />
-                                <span className="text-gray-300 text-sm">{autorisation}</span>
+                                <span className="text-gray-300 text-sm">
+                                  {searchQuery ? highlightText(autorisation, searchQuery) : autorisation}
+                                </span>
                               </li>
                             ))}
                           </ul>
@@ -743,7 +844,7 @@ export default function ReglementPage() {
                 )}
               </Card>
             )
-          })}
+          }))}
         </div>
 
         {/* Footer Note */}

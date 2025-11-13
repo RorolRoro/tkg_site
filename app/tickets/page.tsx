@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/modal'
-import { Ticket, User, Shield, Plus, Send, Clock, CheckCircle, MessageSquare, Calendar, Image, Link } from 'lucide-react'
+import { Ticket, User, Shield, Plus, Send, Clock, CheckCircle, MessageSquare, Calendar, Image, Link, FileText, AlertCircle } from 'lucide-react'
 import { PhotoUpload } from '@/components/ui/photo-upload'
+import { MediaUpload, type MediaItem } from '@/components/ui/media-upload'
+import { getAvailableCategoriesForCreation, TICKET_CATEGORIES, type TicketCategory } from '@/lib/ticket-permissions'
 
 interface TicketMessage {
   id: string
@@ -18,7 +20,7 @@ interface TicketMessage {
   senderName: string
   timestamp: string
   attachments?: {
-    type: 'image' | 'link'
+    type: 'image' | 'link' | 'video'
     url: string
     name?: string
   }[]
@@ -28,7 +30,8 @@ interface UserTicket {
   id: string
   title: string
   description: string
-  type: 'CANDIDATURE_STAFF' | 'CANDIDATURE_CLAN'
+  category?: string
+  type?: string
   status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED'
   messages: TicketMessage[]
   createdAt: string
@@ -40,12 +43,16 @@ export default function TicketsPage() {
   const [activeTab, setActiveTab] = useState<'create' | 'my-tickets'>('create')
   
   // État pour la création de ticket
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [ticketType, setTicketType] = useState<'CANDIDATURE_STAFF' | 'CANDIDATURE_CLAN'>('CANDIDATURE_STAFF')
   const [formData, setFormData] = useState({
     title: '',
-    description: ''
+    description: '',
+    category: '' as TicketCategory | '',
+    additionalInfo: ''
   })
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const availableCategories = getAvailableCategoriesForCreation()
 
   // État pour mes tickets
   const [tickets, setTickets] = useState<UserTicket[]>([])
@@ -54,7 +61,6 @@ export default function TicketsPage() {
   const [newMessage, setNewMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showPhotoUpload, setShowPhotoUpload] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [showClosedTickets, setShowClosedTickets] = useState(false)
 
   useEffect(() => {
@@ -78,27 +84,6 @@ export default function TicketsPage() {
     }
   }
 
-  const ticketTypes = [
-    {
-      type: 'CANDIDATURE_STAFF' as const,
-      title: 'Candidature Staff',
-      description: 'Postulez pour rejoindre l&apos;équipe de modération du serveur',
-      icon: Shield,
-      color: 'text-yellow-400',
-      bgColor: 'bg-yellow-400/10',
-      borderColor: 'border-yellow-500'
-    },
-    {
-      type: 'CANDIDATURE_CLAN' as const,
-      title: 'Candidature Clan',
-      description: 'Demandez à rejoindre un clan ou une organisation spécifique',
-      icon: User,
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-400/10',
-      borderColor: 'border-blue-500'
-    }
-  ]
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -107,6 +92,17 @@ export default function TicketsPage() {
       return
     }
 
+    if (!formData.title.trim() || !formData.description.trim()) {
+      alert('Veuillez remplir au moins le titre et la description')
+      return
+    }
+
+    if (!formData.category) {
+      alert('Veuillez sélectionner une catégorie')
+      return
+    }
+
+    setIsSubmitting(true)
     try {
       const response = await fetch('/api/tickets', {
         method: 'POST',
@@ -116,29 +112,38 @@ export default function TicketsPage() {
         body: JSON.stringify({
           title: formData.title,
           description: formData.description,
-          type: ticketType,
+          category: formData.category,
+          additionalInfo: formData.additionalInfo,
+          attachments: mediaItems.map(item => ({
+            type: item.type,
+            url: item.url,
+            name: item.name
+          }))
         }),
       })
 
       if (response.ok) {
         alert('Ticket créé avec succès !')
-        setIsModalOpen(false)
-        setFormData({ title: '', description: '' })
+        setFormData({
+          title: '',
+          description: '',
+          category: '' as TicketCategory | '',
+          additionalInfo: ''
+        })
+        setMediaItems([])
         // Basculer vers l'onglet mes tickets et rafraîchir
         setActiveTab('my-tickets')
         fetchUserTickets()
       } else {
-        alert('Erreur lors de la création du ticket')
+        const error = await response.json()
+        alert(error.error || 'Erreur lors de la création du ticket')
       }
     } catch (error) {
       console.error('Erreur:', error)
       alert('Erreur lors de la création du ticket')
+    } finally {
+      setIsSubmitting(false)
     }
-  }
-
-  const openModal = (type: 'CANDIDATURE_STAFF' | 'CANDIDATURE_CLAN') => {
-    setTicketType(type)
-    setIsModalOpen(true)
   }
 
   const sendMessage = async () => {
@@ -272,35 +277,11 @@ export default function TicketsPage() {
     }
   }
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'CANDIDATURE_STAFF':
-        return 'Candidature Staff'
-      case 'CANDIDATURE_CLAN':
-        return 'Candidature Clan'
-      default:
-        return type
-    }
-  }
-
   const getFilteredTickets = () => {
-    let filtered = tickets
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(ticket => ticket.type === selectedCategory)
-    }
-
-    const openTickets = filtered.filter(ticket => ticket.status !== 'CLOSED')
-    const closedTickets = filtered.filter(ticket => ticket.status === 'CLOSED')
-
+    const openTickets = tickets.filter(ticket => ticket.status !== 'CLOSED')
+    const closedTickets = tickets.filter(ticket => ticket.status === 'CLOSED')
     return { openTickets, closedTickets }
   }
-
-  const categories = [
-    { id: 'all', label: 'Tous', count: tickets.length },
-    { id: 'CANDIDATURE_STAFF', label: 'Candidature Staff', count: tickets.filter(t => t.type === 'CANDIDATURE_STAFF').length },
-    { id: 'CANDIDATURE_CLAN', label: 'Candidature Clan', count: tickets.filter(t => t.type === 'CANDIDATURE_CLAN').length },
-  ]
 
   return (
     <div className="min-h-screen bg-dark-950 py-12">
@@ -344,131 +325,186 @@ export default function TicketsPage() {
 
         {/* Tab Content */}
         {activeTab === 'create' ? (
-          <>
-            {/* Ticket Types */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              {ticketTypes.map((ticketTypeInfo) => (
-                <Card 
-                  key={ticketTypeInfo.type}
-                  className={`glass-effect ${ticketTypeInfo.borderColor} border-l-4 hover:shadow-glow transition-all duration-300 hover:scale-105 cursor-pointer`}
-                  onClick={() => openModal(ticketTypeInfo.type)}
-                >
-                  <CardHeader>
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-3 rounded-lg ${ticketTypeInfo.bgColor}`}>
-                        <ticketTypeInfo.icon className={`h-8 w-8 ${ticketTypeInfo.color}`} />
-                      </div>
-                      <div>
-                        <CardTitle className="text-white text-xl">{ticketTypeInfo.title}</CardTitle>
-                        <CardDescription className="text-gray-400">
-                          {ticketTypeInfo.description}
-                        </CardDescription>
+          <div className="max-w-4xl mx-auto">
+            {!session ? (
+              <Card className="glass-effect">
+                <CardContent className="p-12 text-center">
+                  <Ticket className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-white text-xl mb-2">Connexion requise</h3>
+                  <p className="text-gray-400 mb-6">
+                    Vous devez être connecté pour créer un ticket.
+                  </p>
+                  <Button
+                    variant="glow"
+                    onClick={() => window.location.href = '/auth/signin'}
+                  >
+                    Se connecter
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="glass-effect border-l-4 border-l-primary-600">
+                <CardHeader>
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 rounded-lg bg-primary-600/10">
+                      <FileText className="h-8 w-8 text-primary-400" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-white text-2xl">Créer un nouveau ticket</CardTitle>
+                      <CardDescription className="text-gray-400">
+                        Remplissez tous les champs nécessaires pour créer votre ticket
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Titre */}
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        Titre du ticket <span className="text-red-400">*</span>
+                      </label>
+                      <Input
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        placeholder="Donnez un titre clair et concis à votre demande"
+                        required
+                        className="bg-dark-800/50 border-dark-700 text-white"
+                      />
+                    </div>
+
+                    {/* Catégorie */}
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        Catégorie <span className="text-red-400">*</span>
+                      </label>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value as TicketCategory })}
+                        required
+                        className="w-full px-4 py-2 bg-dark-800/50 border border-dark-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      >
+                        <option value="">Sélectionnez une catégorie...</option>
+                        {['Haut Staff+', 'Haut Staff', 'Modérateur'].map((group) => (
+                          <optgroup key={group} label={group}>
+                            {availableCategories
+                              .filter(cat => cat.group === group)
+                              .map((cat) => (
+                                <option key={cat.value} value={cat.value}>
+                                  {cat.label}
+                                </option>
+                              ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                      {formData.category && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {availableCategories.find(c => c.value === formData.category)?.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        Description détaillée <span className="text-red-400">*</span>
+                      </label>
+                      <Textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        placeholder="Décrivez votre demande en détail. Plus vous fournissez d'informations, plus nous pourrons vous aider rapidement..."
+                        rows={8}
+                        required
+                        className="bg-dark-800/50 border-dark-700 text-white resize-none"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Minimum 50 caractères recommandés
+                      </p>
+                    </div>
+
+                    {/* Informations supplémentaires */}
+                    <div>
+                      <label className="block text-sm font-medium text-white mb-2">
+                        Informations supplémentaires
+                      </label>
+                      <Textarea
+                        value={formData.additionalInfo}
+                        onChange={(e) => setFormData({ ...formData, additionalInfo: e.target.value })}
+                        placeholder="Toute information supplémentaire qui pourrait être utile (contexte, détails, etc.)"
+                        rows={4}
+                        className="bg-dark-800/50 border-dark-700 text-white resize-none mb-4"
+                      />
+                      
+                      {/* Media Upload */}
+                      <div className="bg-dark-800/30 rounded-lg p-4">
+                        <label className="block text-sm font-medium text-white mb-3">
+                          Ajouter des médias (images, vidéos, liens)
+                        </label>
+                        <MediaUpload
+                          onMediaChange={setMediaItems}
+                          maxFiles={10}
+                          maxSize={50}
+                        />
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      variant="outline" 
-                      className="w-full group"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        openModal(ticketTypeInfo.type)
-                      }}
-                    >
-                      <Plus className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-                      Créer un Ticket
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
 
-            {/* Information Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="glass-effect">
-                <CardContent className="p-6 text-center">
-                  <Ticket className="h-12 w-12 text-primary-400 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold mb-2">Réponse Rapide</h3>
-                  <p className="text-gray-400 text-sm">
-                    Nous répondons à tous les tickets dans les 24 heures
-                  </p>
+                    {/* Info Box */}
+                    <div className="bg-primary-600/10 border border-primary-600/30 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <AlertCircle className="h-5 w-5 text-primary-400 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm text-gray-300">
+                          <p className="font-medium text-white mb-1">Conseil</p>
+                          <p>
+                            Assurez-vous de fournir toutes les informations nécessaires pour que notre équipe puisse traiter votre demande efficacement. 
+                            Les tickets avec des descriptions complètes sont traités plus rapidement.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Submit Buttons */}
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setFormData({
+                            title: '',
+                            description: '',
+                            category: '' as TicketCategory | '',
+                            additionalInfo: ''
+                          })
+                          setMediaItems([])
+                        }}
+                        className="flex-1"
+                        disabled={isSubmitting}
+                      >
+                        Réinitialiser
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="glow"
+                        className="flex-1 group"
+                        disabled={isSubmitting || !formData.title.trim() || !formData.description.trim() || !formData.category}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                            Création en cours...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+                            Créer le Ticket
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
                 </CardContent>
               </Card>
-
-              <Card className="glass-effect">
-                <CardContent className="p-6 text-center">
-                  <Shield className="h-12 w-12 text-green-400 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold mb-2">Confidentiel</h3>
-                  <p className="text-gray-400 text-sm">
-                    Tous vos tickets sont traités de manière confidentielle
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="glass-effect">
-                <CardContent className="p-6 text-center">
-                  <User className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-                  <h3 className="text-white font-semibold mb-2">Support Personnalisé</h3>
-                  <p className="text-gray-400 text-sm">
-                    Chaque ticket est traité individuellement par notre équipe
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Modal */}
-            <Modal
-              isOpen={isModalOpen}
-              onClose={() => setIsModalOpen(false)}
-              title={`Créer un Ticket - ${ticketTypes.find(t => t.type === ticketType)?.title}`}
-            >
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Titre du ticket
-                  </label>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Donnez un titre clair à votre demande"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Description détaillée
-                  </label>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Décrivez votre demande en détail..."
-                    rows={6}
-                    required
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsModalOpen(false)}
-                    className="flex-1"
-                  >
-                    Annuler
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="glow"
-                    className="flex-1 group"
-                  >
-                    <Send className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-                    Envoyer le Ticket
-                  </Button>
-                </div>
-              </form>
-            </Modal>
-          </>
+            )}
+          </div>
         ) : (
           <>
             {!session ? (
@@ -530,37 +566,19 @@ export default function TicketsPage() {
                   </Card>
                 </div>
 
-                {/* Category Filter */}
+                {/* Toggle Closed Tickets */}
                 <div className="mb-8">
-                  <div className="flex flex-wrap gap-3 mb-4">
-                    {categories.map((category) => (
-                      <Button
-                        key={category.id}
-                        variant={selectedCategory === category.id ? 'glow' : 'outline'}
-                        onClick={() => setSelectedCategory(category.id)}
-                        className="flex items-center space-x-2"
-                      >
-                        <span>{category.label}</span>
-                        <Badge variant="secondary" className="ml-2">
-                          {category.count}
-                        </Badge>
-                      </Button>
-                    ))}
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowClosedTickets(!showClosedTickets)}
-                      className="flex items-center space-x-2"
-                    >
-                      <span>{showClosedTickets ? 'Masquer' : 'Afficher'} les tickets fermés</span>
-                      <Badge variant="secondary">
-                        {getFilteredTickets().closedTickets.length}
-                      </Badge>
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowClosedTickets(!showClosedTickets)}
+                    className="flex items-center space-x-2"
+                  >
+                    <span>{showClosedTickets ? 'Masquer' : 'Afficher'} les tickets fermés</span>
+                    <Badge variant="secondary">
+                      {getFilteredTickets().closedTickets.length}
+                    </Badge>
+                  </Button>
                 </div>
 
                 {/* Tickets List */}
@@ -607,9 +625,11 @@ export default function TicketsPage() {
                                       {getStatusIcon(ticket.status)}
                                       <span className="ml-1">{ticket.status}</span>
                                     </Badge>
-                                    <Badge variant="outline" className="text-primary-400 border-primary-400">
-                                      {getTypeLabel(ticket.type)}
-                                    </Badge>
+                                    {(ticket.category || ticket.type) && (
+                                      <Badge variant="outline" className="text-primary-400 border-primary-400">
+                                        {TICKET_CATEGORIES[(ticket.category || ticket.type) as TicketCategory]?.label || ticket.category || ticket.type}
+                                      </Badge>
+                                    )}
                                   </div>
                                   <CardDescription className="text-gray-400 line-clamp-2">
                                     {ticket.description}
@@ -663,9 +683,11 @@ export default function TicketsPage() {
                                             {getStatusIcon(ticket.status)}
                                             <span className="ml-1">{ticket.status}</span>
                                           </Badge>
-                                          <Badge variant="outline" className="text-primary-400 border-primary-400">
-                                            {getTypeLabel(ticket.type)}
-                                          </Badge>
+                                          {(ticket.category || ticket.type) && (
+                                            <Badge variant="outline" className="text-primary-400 border-primary-400">
+                                              {TICKET_CATEGORIES[(ticket.category || ticket.type) as TicketCategory]?.label || ticket.category || ticket.type}
+                                            </Badge>
+                                          )}
                                         </div>
                                         <CardDescription className="text-gray-400 line-clamp-2">
                                           {ticket.description}
@@ -709,10 +731,14 @@ export default function TicketsPage() {
                       {/* Ticket Info */}
                       <div className="bg-dark-800/50 p-4 rounded-lg">
                         <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-400">Type:</span>
-                            <span className="text-white ml-2">{getTypeLabel(selectedTicket.type)}</span>
-                          </div>
+                          {(selectedTicket.category || selectedTicket.type) && (
+                            <div>
+                              <span className="text-gray-400">Catégorie:</span>
+                              <span className="text-white ml-2">
+                                {TICKET_CATEGORIES[(selectedTicket.category || selectedTicket.type) as TicketCategory]?.label || selectedTicket.category || selectedTicket.type}
+                              </span>
+                            </div>
+                          )}
                           <div>
                             <span className="text-gray-400">Statut:</span>
                             <span className="text-white ml-2">{selectedTicket.status}</span>
@@ -784,22 +810,42 @@ export default function TicketsPage() {
                                 
                                 {/* Attachments */}
                                 {message.attachments && message.attachments.length > 0 && (
-                                  <div className="mt-2 space-y-1">
+                                  <div className="mt-3 space-y-2">
                                     {message.attachments.map((attachment, index) => (
-                                      <div key={index} className="flex items-center space-x-2">
-                                        {attachment.type === 'image' ? (
-                                          <Image className="h-3 w-3" />
-                                        ) : (
-                                          <Link className="h-3 w-3" />
+                                      <div key={index}>
+                                        {attachment.type === 'image' && (
+                                          <div className="rounded-lg overflow-hidden">
+                                            <img
+                                              src={attachment.url}
+                                              alt={attachment.name || `Image ${index + 1}`}
+                                              className="max-w-full max-h-64 object-contain"
+                                            />
+                                          </div>
                                         )}
-                                        <a
-                                          href={attachment.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="text-xs underline hover:no-underline"
-                                        >
-                                          {attachment.name || 'Pièce jointe'}
-                                        </a>
+                                        {attachment.type === 'video' && (
+                                          <div className="rounded-lg overflow-hidden">
+                                            <video
+                                              src={attachment.url}
+                                              controls
+                                              className="max-w-full max-h-64"
+                                            >
+                                              Votre navigateur ne supporte pas la lecture de vidéos.
+                                            </video>
+                                          </div>
+                                        )}
+                                        {attachment.type === 'link' && (
+                                          <div className="flex items-center space-x-2">
+                                            <Link className="h-4 w-4" />
+                                            <a
+                                              href={attachment.url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-xs underline hover:no-underline break-all"
+                                            >
+                                              {attachment.name || attachment.url}
+                                            </a>
+                                          </div>
+                                        )}
                                       </div>
                                     ))}
                                   </div>
@@ -818,7 +864,7 @@ export default function TicketsPage() {
                             onChange={(e) => setNewMessage(e.target.value)}
                             placeholder="Tapez votre message..."
                             rows={3}
-                            className="flex-1"
+                            className="flex-1 bg-dark-800/50 border-dark-700 text-white"
                           />
                         </div>
                         

@@ -9,6 +9,7 @@ import { Modal } from '@/components/ui/modal'
 import { Badge } from '@/components/ui/badge'
 import { PhotoUpload } from '@/components/ui/photo-upload'
 import { Ticket, Clock, CheckCircle, XCircle, MessageSquare, User, Calendar, Plus, Image, Link, Send, Play, Square, Edit } from 'lucide-react'
+import { TICKET_CATEGORIES } from '@/lib/ticket-permissions'
 
 interface TicketMessage {
   id: string
@@ -27,7 +28,8 @@ interface TicketData {
   id: string
   title: string
   description: string
-  type: 'CANDIDATURE_STAFF' | 'CANDIDATURE_CLAN'
+  category?: string
+  type?: 'CANDIDATURE_STAFF' | 'CANDIDATURE_CLAN' | string
   status: 'OPEN' | 'IN_PROGRESS' | 'CLOSED'
   user: {
     name: string
@@ -262,7 +264,7 @@ export default function StaffTicketsPage() {
 
     // Filtrer par catégorie
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(ticket => ticket.type === selectedCategory)
+      filtered = filtered.filter(ticket => (ticket.category || ticket.type) === selectedCategory)
     }
 
     // Séparer les tickets fermés
@@ -272,10 +274,15 @@ export default function StaffTicketsPage() {
     return { openTickets, closedTickets }
   }
 
+  // Obtenir les catégories uniques des tickets
+  const uniqueCategories = Array.from(new Set(tickets.map(t => t.category || t.type).filter(Boolean))) as string[]
   const categories = [
     { id: 'all', label: 'Tous', count: tickets.length },
-    { id: 'CANDIDATURE_STAFF', label: 'Candidature Staff', count: tickets.filter(t => t.type === 'CANDIDATURE_STAFF').length },
-    { id: 'CANDIDATURE_CLAN', label: 'Candidature Clan', count: tickets.filter(t => t.type === 'CANDIDATURE_CLAN').length },
+    ...uniqueCategories.map(cat => ({
+      id: cat,
+      label: cat,
+      count: tickets.filter(t => (t.category || t.type) === cat).length
+    }))
   ]
 
   const getStatusColor = (status: string) => {
@@ -304,15 +311,13 @@ export default function StaffTicketsPage() {
     }
   }
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'CANDIDATURE_STAFF':
-        return 'Candidature Staff'
-      case 'CANDIDATURE_CLAN':
-        return 'Candidature Clan'
-      default:
-        return type
+  const getTypeLabel = (type?: string) => {
+    if (!type) return 'Non spécifié'
+    // Utiliser les labels des catégories si disponible
+    if (TICKET_CATEGORIES[type as keyof typeof TICKET_CATEGORIES]) {
+      return TICKET_CATEGORIES[type as keyof typeof TICKET_CATEGORIES].label
     }
+    return type
   }
 
   if (isLoading) {
@@ -447,9 +452,9 @@ export default function StaffTicketsPage() {
                               {getStatusIcon(ticket.status)}
                               <span className="ml-1">{ticket.status}</span>
                             </Badge>
-                            <Badge variant="outline" className="text-primary-400 border-primary-400">
-                              {getTypeLabel(ticket.type)}
-                            </Badge>
+                                    <Badge variant="outline" className="text-primary-400 border-primary-400">
+                                      {getTypeLabel(ticket.category || ticket.type)}
+                                    </Badge>
                           </div>
                           <CardDescription className="text-gray-400 line-clamp-2">
                             {ticket.description}
@@ -507,9 +512,9 @@ export default function StaffTicketsPage() {
                                     {getStatusIcon(ticket.status)}
                                     <span className="ml-1">{ticket.status}</span>
                                   </Badge>
-                                  <Badge variant="outline" className="text-primary-400 border-primary-400">
-                                    {getTypeLabel(ticket.type)}
-                                  </Badge>
+                                    <Badge variant="outline" className="text-primary-400 border-primary-400">
+                                      {getTypeLabel(ticket.category || ticket.type)}
+                                    </Badge>
                                 </div>
                                 <CardDescription className="text-gray-400 line-clamp-2">
                                   {ticket.description}
@@ -559,7 +564,7 @@ export default function StaffTicketsPage() {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-400">Type:</span>
-                    <span className="text-white ml-2">{getTypeLabel(selectedTicket.type)}</span>
+                    <span className="text-white ml-2">{getTypeLabel(selectedTicket.category || selectedTicket.type)}</span>
                   </div>
                   <div>
                     <span className="text-gray-400">Statut:</span>
