@@ -236,6 +236,9 @@ const mockStaffMembers: StaffMember[] = [
   }
 ]
 
+// Fonction utilitaire pour obtenir le rôle d'affichage d'un membre
+const getDisplayRole = (member: StaffMember) => member.roleName || member.role
+
 export default function OrganigrammePage() {
   const { data: session } = useSession()
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
@@ -336,7 +339,6 @@ export default function OrganigrammePage() {
     return permission?.color || 'bg-gray-600'
   }
 
-  const getDisplayRole = (member: StaffMember) => member.roleName || member.role
   const normalizeRoleName = (value?: string) =>
     (value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
 
