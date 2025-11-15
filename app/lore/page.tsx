@@ -3,15 +3,24 @@
 import Image, { type StaticImageData } from "next/image"
 import { useEffect, useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-
-import placeholderClanCrest from "@/app/assets/placeholder1.jpg"
-import placeholderGenealogy from "@/app/assets/placeholder2.jpg"
-import koshinCrest from "@/app/assets/Koshin/logo.png"
-import yoshimuraCrest from "@/app/assets/Yoshimura/arbre.png"
-import yoshimuraGenealogy from "@/app/assets/Yoshimura/logo.png"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import type { LucideIcon } from "lucide-react"
 import { Crown, Flame, Layers, Orbit, ScrollText, Shield, Swords } from "lucide-react"
+
+// tempo
+import placeholderClanCrest from "@/app/assets/placeholder1.jpg"
+import placeholderGenealogy from "@/app/assets/placeholder2.jpg"
+
+// Koshin
+import koshinCrest from "@/app/assets/Koshin/logo.png"
+
+// Yoshimura
+import yoshimuraCrest from "@/app/assets/Yoshimura/arbre.png"
+import yoshimuraGenealogy from "@/app/assets/Yoshimura/logo.png"
+
+// Tsukiyama
+import tsukiyamaArbre from "@/app/assets/Tsukiyama/arbre.png"
+import tsukiyamaLogo from "@/app/assets/Tsukiyama/logo.png"
 
 
 type LoreChapter = {
@@ -412,21 +421,22 @@ const clanLoreEntries: ClanLore[] = [
     highlights: [
       "Soutien strategique a Oda Nobunaga pour acceder aux elites.",
       "Creation des Roses pour masquer les chasses et choisir les victimes.",
-      "Implantation mondiale via entreprises, art et politiques."
+      "Implantation mondiale via entreprises, art et politiques.",
+      "Le CCG reconnais les Tsukiyama en tant que goule"
     ],
     timeline: [
       { year: "Ere Edo", title: "Fournissent armes et mercenaires aux seigneurs humains." },
       { year: "Ere Meiji", title: "Investissements massifs dans l'industrie et la finance." },
-      { year: "Epoque actuelle", title: "Alliance discrete avec le Restaurant des Goules." }
+      { year: "Epoque actuelle", title: "Cacher au sein de Shinjuku, etant reconnu comme ghoul par le CCG." }
     ],
     crestNote: "Inserez le blason floral des Tsukiyama.",
     genealogyNote: "Prevoir les branches reliant Les Roses au tronc familial.",
     crestImage: {
-      src: placeholderClanCrest,
+      src: tsukiyamaArbre,
       alt: "Illustration temporaire du clan Tsukiyama"
     },
     genealogyImage: {
-      src: placeholderGenealogy,
+      src: tsukiyamaLogo,
       alt: "Placeholder pour l'arbre genealogique Tsukiyama"
     }
   },
@@ -908,7 +918,7 @@ export default function LorePage() {
                                           />
                                           {!revealedImages.crest ? (
                                             <span className="absolute inset-0 flex items-center justify-center bg-black/45 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
-                                              Spoiler : cliquer pour reveler
+                                              Cliquer pour reveler
                                             </span>
                                           ) : (
                                             <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
@@ -960,7 +970,7 @@ export default function LorePage() {
 
                                 <Card className="border-dashed border-primary-400/30 bg-dark-900/70">
                                   <CardHeader>
-                                    <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Arbre genealogique</p>
+                                    <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Logo du Clan</p>
                                     <CardDescription className="text-gray-300">
                                       {activeClan.genealogyImage
                                         ? ""
