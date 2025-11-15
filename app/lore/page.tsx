@@ -11,7 +11,7 @@ import yoshimuraCrest from "@/app/assets/Yoshimura/arbre.png"
 import yoshimuraGenealogy from "@/app/assets/Yoshimura/logo.png"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import type { LucideIcon } from "lucide-react"
-import { Crown, Flame, Layers, Orbit, ScrollText, Shield, Swords, Users } from "lucide-react"
+import { Crown, Flame, Layers, Orbit, ScrollText, Shield, Swords } from "lucide-react"
 
 
 type LoreChapter = {
@@ -267,6 +267,7 @@ const listItem = {
 const hoverSpring = { type: "spring", stiffness: 320, damping: 20 }
 
 type LoreView = "clan" | "global"
+type ClanPairingSide = "ccg" | "ghoul"
 
 type ClanLore = {
   id: string
@@ -518,6 +519,82 @@ const clanLoreEntries: ClanLore[] = [
   }
 ]
 
+const clanPairings: {
+  id: string
+  ccg: { id: ClanLore["id"]; note: string }
+  ghoul: { id: ClanLore["id"]; note: string }
+}[] = [
+  {
+    id: "axis-washu-yoshimura",
+    ccg: {
+      id: "washu",
+      note: "Fondateurs du CCG, gardiens inflexibles des institutions imperiales."
+    },
+    ghoul: {
+      id: "yoshimura",
+      note: "Incarnations de la Chouette, juges sanguins du Roi Souterrain."
+    }
+  },
+  {
+    id: "axis-arima-kirishima",
+    ccg: {
+      id: "arima",
+      note: "Ombres ninjas du Washu, architectes des Traqueurs de l'Ombre."
+    },
+    ghoul: {
+      id: "kirishima",
+      note: "Clan d'honneur aux kagunes armures, fratrie criminelle samourai."
+    }
+  },
+  {
+    id: "axis-suzuya-tsukiyama",
+    ccg: {
+      id: "suzuya",
+      note: "Inspecteurs instables du CCG, armes de precision sur le terrain."
+    },
+    ghoul: {
+      id: "tsukiyama",
+      note: "Gourmets flamboyants, empire mondain nourri de cibles choisies."
+    }
+  },
+  {
+    id: "axis-kuroiwa-koshin",
+    ccg: {
+      id: "kuroiwa",
+      note: "Corps de choc urbain, colonne vertebrale des operations du CCG."
+    },
+    ghoul: {
+      id: "koshin",
+      note: "Diplomates telepathes, architectes des pactes invisibles entre clans."
+    }
+  }
+]
+
+const factionStyles: Record<
+  ClanPairingSide,
+  { border: string; glow: string; badge: string; chip: string; focus: string }
+> = {
+  ccg: {
+    border: "border-blue-500/30",
+    glow: "from-blue-500/25 via-blue-400/10 to-transparent",
+    badge: "border-blue-400/50 bg-blue-500/15 text-blue-100",
+    chip: "bg-blue-500/20 text-blue-100",
+    focus: "focus-visible:ring-blue-400/60"
+  },
+  ghoul: {
+    border: "border-rose-500/30",
+    glow: "from-rose-500/25 via-rose-400/10 to-transparent",
+    badge: "border-rose-400/50 bg-rose-500/15 text-rose-100",
+    chip: "bg-rose-500/20 text-rose-100",
+    focus: "focus-visible:ring-rose-400/60"
+  }
+}
+
+const clanLoreById = clanLoreEntries.reduce<Record<string, ClanLore>>((acc, clan) => {
+  acc[clan.id] = clan
+  return acc
+}, {})
+
 
 const loreEntryOptions: {
   title: string
@@ -691,40 +768,78 @@ export default function LorePage() {
                           >
                           {!activeClan && (
                             <>
-                              <motion.div className="grid gap-6 md:grid-cols-2" variants={listParent} initial="hidden" animate="visible">
-                                {clanLoreEntries.map((clan, index) => (
-                                  <motion.button
-                                    key={clan.id}
-                                    type="button"
-                                    onClick={() => setSelectedClan(clan.id)}
-                                    className="group text-left outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
-                                    variants={listItem}
-                                    custom={index}
-                                    whileHover={{ y: -6, scale: 1.005 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    transition={hoverSpring}
-                                  >
-                                    <Card className="h-full border border-white/10 bg-dark-900/70 transition-colors hover:border-primary-400/40">
-                                      <CardHeader className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                          <CardTitle className="text-2xl text-white">{clan.name}</CardTitle>
-                                          <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-widest text-gray-300">
-                                            {clan.status}
-                                          </span>
-                                        </div>
-                                        <CardDescription className="text-base leading-relaxed text-gray-300">{clan.description}</CardDescription>
-                                        <p className="text-sm text-primary-200">Vigilance : {clan.vigilance}</p>
-                                      </CardHeader>
-                                      <CardContent className="flex items-center gap-2 text-primary-200">
-                                        <Users className="h-4 w-4" />
-                                        <span>Lire ce clan</span>
-                                      </CardContent>
-                                    </Card>
-                                  </motion.button>
+                              <motion.div
+                                className="rounded-3xl border border-white/10 bg-dark-900/60 p-6"
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4 }}
+                              >
+                                <div className="flex flex-wrap items-center justify-center gap-4">
+                                  <div className="flex flex-wrap gap-4 text-xs font-semibold uppercase tracking-[0.3em]">
+                                    <span className="flex items-center gap-2 text-blue-100">
+                                      <span className="h-2.5 w-2.5 rounded-full bg-blue-400" />
+                                      CCG
+                                    </span>
+                                    <span className="flex items-center gap-2 text-rose-100">
+                                      <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+                                      Goules
+                                    </span>
+                                  </div>
+                                </div>
+                              </motion.div>
+                              <motion.div className="space-y-6" variants={listParent} initial="hidden" animate="visible">
+                                {clanPairings.map((pair, pairIndex) => (
+                                  <motion.div key={pair.id} variants={listItem} custom={pairIndex} className="space-y-3">
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                      {(["ccg", "ghoul"] as const).map((side) => {
+                                        const entry = pair[side]
+                                        const clanDetails = clanLoreById[entry.id]
+                                        if (!clanDetails) {
+                                          return null
+                                        }
+                                        const styles = factionStyles[side]
+                                        const factionLabel = side === "ccg" ? "CCG" : "Goule"
+                                        return (
+                                          <motion.button
+                                            key={`${pair.id}-${side}`}
+                                            type="button"
+                                            onClick={() => setSelectedClan(entry.id)}
+                                            className={`group relative overflow-hidden rounded-3xl border bg-dark-950/70 p-6 text-left outline-none transition hover:-translate-y-1 hover:border-white/40 ${styles.border} ${styles.focus} focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950`}
+                                            whileHover={{ y: -6, scale: 1.01 }}
+                                            whileTap={{ scale: 0.985 }}
+                                            transition={hoverSpring}
+                                          >
+                                            <div className={`pointer-events-none absolute inset-0 opacity-70 bg-gradient-to-br ${styles.glow}`} />
+                                            <div className="relative flex h-full flex-col gap-5">
+                                              <div className="flex items-center justify-between">
+                                                <span className={`rounded-full border px-3 py-1 text-xs uppercase tracking-[0.4em] ${styles.badge}`}>
+                                                  {factionLabel}
+                                                </span>
+                                                <span className="text-sm uppercase tracking-[0.3em] text-gray-400">{clanDetails.status}</span>
+                                              </div>
+                                              <div className="space-y-1">
+                                                <p className="text-2xl font-semibold text-white">{clanDetails.name}</p>
+                                                <p className="text-sm text-gray-300">{entry.note}</p>
+                                              </div>
+                                              <div className="mt-auto flex items-center gap-2 text-sm font-semibold text-white">
+                                                <span>Voir les details</span>
+                                                <span aria-hidden>→</span>
+                                              </div>
+                                            </div>
+                                          </motion.button>
+                                        )
+                                      })}
+                                    </div>
+                                  </motion.div>
                                 ))}
                               </motion.div>
-                              <motion.div variants={scaleVariants} initial="hidden" animate="visible" className="rounded-2xl border border-dashed border-white/10 bg-dark-900/60">
-                                <CardContent className="py-10 text-center text-gray-400">Choisissez un clan pour afficher ses details.</CardContent>
+                              <motion.div
+                                variants={scaleVariants}
+                                initial="hidden"
+                                animate="visible"
+                                className="rounded-3xl border border-dashed border-white/10 bg-dark-900/60 p-8 text-center text-gray-400"
+                              >
+                                Cliquez sur un clan bleu ou rouge pour charger sa chronologie complete.
                               </motion.div>
                             </>
                           )}
