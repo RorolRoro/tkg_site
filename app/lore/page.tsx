@@ -633,7 +633,7 @@ const loreEntryOptions: {
 export default function LorePage() {
   const [activeView, setActiveView] = useState<LoreView | null>(null)
   const [selectedClan, setSelectedClan] = useState<string | null>(null)
-  const [revealedImages, setRevealedImages] = useState({ crest: false, genealogy: false })
+  const [revealedCrest, setRevealedCrest] = useState(false)
   const [modalImage, setModalImage] = useState<{ src: StaticImageData; alt: string } | null>(null)
   const viewLabels: Record<LoreView, string> = {
     clan: "Lore de clan",
@@ -643,8 +643,8 @@ export default function LorePage() {
   const activeClan = activeClanIndex >= 0 ? clanLoreEntries[activeClanIndex] : null
 
   useEffect(() => {
-    setRevealedImages({ crest: false, genealogy: false })
     setModalImage(null)
+    setRevealedCrest(false)
   }, [activeClanIndex])
 
   const selectRelativeClan = (direction: 1 | -1) => {
@@ -664,8 +664,8 @@ export default function LorePage() {
     if (!image) {
       return
     }
-    if (!revealedImages[type]) {
-      setRevealedImages((prev) => ({ ...prev, [type]: true }))
+    if (type === "crest" && !revealedCrest) {
+      setRevealedCrest(true)
       return
     }
     setModalImage(image)
@@ -914,16 +914,18 @@ export default function LorePage() {
                                             alt={activeClan.crestImage.alt}
                                             fill
                                             sizes="(min-width: 1024px) 360px, 100vw"
-                                            className={`object-cover transition duration-500 ${revealedImages.crest ? "opacity-100 blur-0" : "opacity-30 blur-sm"}`}
+                                            className={`object-cover transition duration-500 ${
+                                              revealedCrest ? "opacity-100 blur-0" : "opacity-30 blur-sm"
+                                            }`}
                                             priority
                                           />
-                                          {!revealedImages.crest ? (
-                                            <span className="absolute inset-0 flex items-center justify-center bg-black/45 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
-                                              Cliquer pour reveler
+                                          {revealedCrest ? (
+                                            <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white transition group-hover:bg-black/80">
+                                              Voir en plein ecran
                                             </span>
                                           ) : (
-                                            <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
-                                              Voir en plein ecran
+                                            <span className="absolute inset-0 flex items-center justify-center bg-black/45 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
+                                              Cliquer pour reveler
                                             </span>
                                           )}
                                         </motion.button>
@@ -995,17 +997,11 @@ export default function LorePage() {
                                             alt={activeClan.genealogyImage.alt}
                                             fill
                                             sizes="(min-width: 1024px) 420px, 100vw"
-                                            className={`object-cover transition duration-500 ${revealedImages.genealogy ? "opacity-100 blur-0" : "opacity-30 blur-sm"}`}
+                                            className="object-cover opacity-100 blur-0 transition duration-500"
                                           />
-                                          {!revealedImages.genealogy ? (
-                                            <span className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
-                                              Spoiler : cliquer pour reveler
-                                            </span>
-                                          ) : (
-                                            <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
-                                              Voir en plein ecran
-                                            </span>
-                                          )}
+                                          <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white transition group-hover:bg-black/80">
+                                            Voir en plein ecran
+                                          </span>
                                         </div>
                                       </motion.button>
                                     ) : (
