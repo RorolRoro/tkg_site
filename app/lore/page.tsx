@@ -13,6 +13,7 @@ import placeholderGenealogy from "@/app/assets/placeholder2.jpg"
 
 // Koshin
 import koshinCrest from "@/app/assets/Koshin/logo.png"
+import koshinArbre from "@/app/assets/Koshin/arbre.png"
 
 // Yoshimura
 import yoshimuraCrest from "@/app/assets/Yoshimura/arbre.png"
@@ -490,7 +491,7 @@ const clanLoreEntries: ClanLore[] = [
     crestNote: "Inserer la silhouette doree des yeux du mensonge.",
     genealogyNote: "Tracer la lignee reliant Renzaburo a Jin Koshin.",
     crestImage: {
-      src: placeholderGenealogy,
+      src: koshinArbre,
       alt: "Illustration du clan Koshin"
     },
     genealogyImage: {
