@@ -2,6 +2,7 @@
 
 import Image, { type StaticImageData } from "next/image"
 import { useEffect, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 
 import placeholderClanCrest from "@/app/assets/placeholder1.jpg"
 import placeholderGenealogy from "@/app/assets/placeholder2.jpg"
@@ -239,12 +240,38 @@ const presentDay = {
     "Shinjuku renait difficilement grace aux expeditions conjointes du CCG et de groupes independants. Le CCG se reforme sur les ruines de son ancien QG pour empecher l'Abime de s'etendre. Pourtant, les tensions internes explosent, les inspecteurs doutent et les goules se reorganisent. Certaines revent de paix, d'autres de vengeance, mais toutes sentent que le retour du Roi est proche."
 }
 
+const fadeVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
+}
+
+const scaleVariants = {
+  hidden: { opacity: 0, scale: 0.95 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.4 } },
+  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.3 } }
+}
+
+const listParent = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } },
+  exit: { opacity: 0 }
+}
+
+const listItem = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+  exit: { opacity: 0, y: -16, transition: { duration: 0.25 } }
+}
+
+const hoverSpring = { type: "spring", stiffness: 320, damping: 20 }
+
 type LoreView = "clan" | "global"
 
 type ClanLore = {
   id: string
   name: string
-  status: "Disponible" | "Bientot"
+  status: "Restraint" | "Bientot"
   description: string
   vigilance: string
   lore: string
@@ -260,7 +287,7 @@ const clanLoreEntries: ClanLore[] = [
   {
     id: "washu",
     name: "Clan Washu",
-    status: "Disponible",
+    status: "Restraint",
     description: "Dynastie fondatrice du CCG, austere et omnipresente dans les rouages de la securite interieure.",
     vigilance: "Rumeurs d'un kagune dormant dans certaines branches familiales.",
     lore:
@@ -289,7 +316,7 @@ const clanLoreEntries: ClanLore[] = [
   {
     id: "arima",
     name: "Clan Arima",
-    status: "Disponible",
+    status: "Restraint",
     description: "Lames fantomes loyales au Washu, passes maitres dans l'infiltration et l'assassinat.",
     vigilance: "Descendance soumise a des rituels ninjas et a des maladies inexplicables.",
     lore:
@@ -318,7 +345,7 @@ const clanLoreEntries: ClanLore[] = [
   {
     id: "suzuya",
     name: "Clan Suzuya",
-    status: "Disponible",
+    status: "Restraint",
     description: "Dernier clan adosse au CCG, redoute pour sa violence chirurgicale.",
     vigilance: "Descendance marquee par des traumatismes et une biologie atypique.",
     lore:
@@ -347,7 +374,7 @@ const clanLoreEntries: ClanLore[] = [
   {
     id: "yoshimura",
     name: "Clan Yoshimura",
-    status: "Disponible",
+    status: "Restraint",
     description: "Famille mythique d'assassins goules, maitres de la Chouette.",
     vigilance: "Rumeurs persistantes sur une survie clandestine apres leur extinction officielle.",
     lore:
@@ -376,7 +403,7 @@ const clanLoreEntries: ClanLore[] = [
   {
     id: "tsukiyama",
     name: "Clan Tsukiyama",
-    status: "Disponible",
+    status: "Restraint",
     description: "Dynastie de goules esthetes infiltrees dans l'aristocratie humaine.",
     vigilance: "Connexion directe avec le Restaurant des Goules et les Roses secretes.",
     lore:
@@ -405,7 +432,7 @@ const clanLoreEntries: ClanLore[] = [
   {
     id: "kirishima",
     name: "Clan Kirishima",
-    status: "Disponible",
+    status: "Restraint",
     description: "Famille de goules yakuzas forgee sur l'honneur et l'armure d'Arata.",
     vigilance: "Clan fragmente depuis la mort d'Arata, mais heritage toujours vivant.",
     lore:
@@ -434,7 +461,7 @@ const clanLoreEntries: ClanLore[] = [
   {
     id: "koshin",
     name: "Clan Koshin",
-    status: "Disponible",
+    status: "Restraint",
     description: "Manipulateurs psychiques de Kabukicho, architectes de l'esprit.",
     vigilance: "Neutres mais capables de remodeler memoires et perceptions.",
     lore:
@@ -463,7 +490,7 @@ const clanLoreEntries: ClanLore[] = [
   {
     id: "kuroiwa",
     name: "Clan Kuroiwa",
-    status: "Disponible",
+    status: "Restraint",
     description: "Dynastie d'inspecteurs de Shibuya, figures de la force brute du CCG.",
     vigilance: "Loyaux jusqu'au sacrifice, allergiques aux zones grises.",
     lore:
@@ -557,380 +584,470 @@ export default function LorePage() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-950 py-16">
+    <motion.div
+      className="min-h-screen bg-dark-950 py-16"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        {!activeView && (
-          <section className="text-center">
-            <p className="text-sm uppercase tracking-[0.4em] text-primary-300">Lore du serveur</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Choisissez votre lecture</h2>
-            <p className="mt-3 text-gray-400">Accedez soit au panorama global, soit aux destins particuliers des clans.</p>
-            <div className="mt-10 grid gap-6 md:grid-cols-2">
-              {loreEntryOptions.map((option) => (
-                <button
-                  key={option.title}
-                  type="button"
-                  onClick={() => setActiveView(option.view)}
-                  className="group block text-left outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
-                >
-                  <Card className="h-full border-white/10 bg-dark-900/80 transition-all duration-300 group-hover:-translate-y-1 group-hover:border-primary-400/40">
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-2xl text-white">{option.title}</CardTitle>
-                        <span className="rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-wide text-gray-300">
-                          {option.badge}
-                        </span>
-                      </div>
-                      <CardDescription className="text-base leading-relaxed text-gray-300">{option.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-2 text-primary-200">
-                        <span>{option.cta}</span>
-                        <span aria-hidden>{">"}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {activeView && (
-          <div className="mb-8 mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-dark-900/60 px-4 py-3">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveView(null)
-                setSelectedClan(null)
-              }}
-              className="text-sm font-semibold text-primary-200 transition hover:text-primary-100"
+        <AnimatePresence mode="wait" initial={false}>
+          {activeView === null ? (
+            <motion.section
+              key="selector"
+              className="text-center"
+              variants={fadeVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
             >
-              <p>Retour aux clans</p>
-            </button>
-            <p className="text-xs uppercase tracking-[0.4em] text-gray-400">Vous consultez : {viewLabels[activeView]}</p>
-          </div>
-        )}
-
-        {activeView === "clan" && (
-          <section id="clan-lore" className="space-y-10">
-            {!activeClan && (
-              <>
-                <div className="grid gap-6 md:grid-cols-2">
-                  {clanLoreEntries.map((clan) => (
-                    <button
-                      key={clan.id}
-                      type="button"
-                      onClick={() => setSelectedClan(clan.id)}
-                      className="group text-left outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
-                    >
-                      <Card className="h-full border border-white/10 bg-dark-900/70 transition-colors hover:border-primary-400/40">
-                        <CardHeader className="space-y-4">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-2xl text-white">{clan.name}</CardTitle>
-                            <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-widest text-gray-300">
-                              {clan.status}
-                            </span>
-                          </div>
-                          <CardDescription className="text-base leading-relaxed text-gray-300">{clan.description}</CardDescription>
-                          <p className="text-sm text-primary-200">Vigilance : {clan.vigilance}</p>
-                        </CardHeader>
-                        <CardContent className="flex items-center gap-2 text-primary-200">
-                          <Users className="h-4 w-4" />
-                          <span>Lire ce clan</span>
-                        </CardContent>
-                      </Card>
-                    </button>
-                  ))}
-                </div>
-                <Card className="border-dashed border-white/10 bg-dark-900/60">
-                  <CardContent className="py-10 text-center text-gray-400">Choisissez un clan pour afficher ses details.</CardContent>
-                </Card>
-              </>
-            )}
-
-            {activeClan && (
-              <div className="space-y-10">
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-dark-900/60 px-4 py-3">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedClan(null)}
-                    className="text-sm font-semibold text-primary-200 transition hover:text-primary-100"
-                  >
-                    <p>Retour aux clans</p>
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => selectRelativeClan(-1)}
-                      disabled={clanLoreEntries.length < 2}
-                      className="rounded-full border border-white/15 px-4 py-2 text-sm text-white transition disabled:cursor-not-allowed disabled:opacity-40 hover:border-primary-300"
-                      aria-label="Voir le clan precedent"
-                    >
-                      {"<"}
-                    </button>
-                    <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
-                      {activeClanIndex + 1}/{clanLoreEntries.length}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => selectRelativeClan(1)}
-                      disabled={clanLoreEntries.length < 2}
-                      className="rounded-full border border-white/15 px-4 py-2 text-sm text-white transition disabled:cursor-not-allowed disabled:opacity-40 hover:border-primary-300"
-                      aria-label="Voir le clan suivant"
-                    >
-                      {">"}
-                    </button>
-                  </div>
-                </div>
-                <section className="grid gap-6 rounded-3xl border border-white/10 bg-dark-900/70 p-6 lg:grid-cols-2">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.4em] text-primary-300">Clan selectionne</p>
-                    <h2 className="mt-2 text-3xl font-semibold text-white">{activeClan.name}</h2>
-                    <p className="mt-4 text-lg text-gray-300">{activeClan.lore}</p>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="rounded-2xl border border-dashed border-white/15 bg-dark-950/60 p-6 text-center">
-                      <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Arbre genealogique</p>
-                      <div className="mt-4">
-                        {activeClan.crestImage ? (
-                          <button
-                            type="button"
-                            onClick={() => handleImageReveal("crest")}
-                            className="group relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-dark-900/60 text-gray-500 transition hover:border-primary-400 focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
-                            aria-label="Afficher le logo en grand"
-                          >
-                            <Image
-                              src={activeClan.crestImage.src}
-                              alt={activeClan.crestImage.alt}
-                              fill
-                              sizes="(min-width: 1024px) 360px, 100vw"
-                              className={`object-cover transition duration-500 ${revealedImages.crest ? "opacity-100 blur-0" : "opacity-30 blur-sm"}`}
-                              priority
-                            />
-                            {!revealedImages.crest ? (
-                              <span className="absolute inset-0 flex items-center justify-center bg-black/45 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
-                                Spoiler : cliquer pour reveler
-                              </span>
-                            ) : (
-                              <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
-                                Voir en plein ecran
-                              </span>
-                            )}
-                          </button>
-                        ) : (
-                          <div className="flex h-48 items-center justify-center rounded-xl border border-white/10 bg-dark-900/60 text-gray-500">
-                            {activeClan.crestNote ?? "Ajoutez une illustration de clan."}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-dark-950/60 p-6">
-                      <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Points clefs</p>
-                      <ul className="mt-4 space-y-3 text-gray-200">
-                        {activeClan.highlights.map((highlight) => (
-                          <li key={highlight} className="flex gap-2">
-                            <span className="mt-1 h-2 w-2 rounded-full bg-primary-300" />
-                            <span>{highlight}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="grid gap-6 lg:grid-cols-3">
-                  <Card className="border-white/10 bg-dark-900/70 lg:col-span-2">
-                    <CardHeader>
-                      <CardTitle className="text-xl text-white">Moments determinants</CardTitle>
-                      <CardDescription className="text-gray-300">Balises pour retracer l&apos;influence du clan.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {activeClan.timeline.map((step) => (
-                        <div key={`${step.year}-${step.title}`} className="rounded-2xl border border-white/10 bg-dark-950/60 p-4">
-                          <p className="text-sm font-semibold text-primary-200">{step.year}</p>
-                          <p className="text-lg text-white">{step.title}</p>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-dashed border-primary-400/30 bg-dark-900/70">
-                    <CardHeader>
-                      <CardTitle className="text-xl text-white">Logo du Clan</CardTitle>
-                      <CardDescription className="text-gray-300">
-                        {activeClan.genealogyImage
-                          ? "cliquer pour reveler le logo du Clan."
-                          : activeClan.genealogyNote ?? "Ajoutez l&apos;arbre genealogique."}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {activeClan.genealogyImage ? (
-                        <button
-                          type="button"
-                          onClick={() => handleImageReveal("genealogy")}
-                          className="group w-full rounded-xl border border-white/10 bg-dark-950/60 text-left transition hover:border-primary-400 focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
-                          aria-label="Afficher l'arbre genealogique"
-                        >
-                          <div className="relative flex h-64 items-center justify-center overflow-hidden rounded-xl">
-                            <Image
-                              src={activeClan.genealogyImage.src}
-                              alt={activeClan.genealogyImage.alt}
-                              fill
-                              sizes="(min-width: 1024px) 420px, 100vw"
-                              className={`object-cover transition duration-500 ${revealedImages.genealogy ? "opacity-100 blur-0" : "opacity-30 blur-sm"}`}
-                            />
-                            {!revealedImages.genealogy ? (
-                              <span className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
-                                Spoiler : cliquer pour reveler
-                              </span>
-                            ) : (
-                              <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
-                                Voir en plein ecran
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      ) : (
-                        <div className="flex h-64 items-center justify-center rounded-xl border border-white/10 bg-dark-950/60 text-center text-gray-400">
-                          Zone reservee pour importer ou dessiner l&apos;arbre.
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </section>
-              </div>
-            )}
-          </section>
-        )}
-
-        {activeView === "global" && (
-          <>
-            <section id="global-lore" className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-dark-900 via-dark-950 to-black p-8 md:p-12">
-              <div className="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.15),_transparent_55%)]" />
-              <div className="relative">
-                <p className="mb-4 text-sm uppercase tracking-[0.4em] text-primary-300">Lore officiel du serveur</p>
-                <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl">Lignes de sang, pactes oublies et renaissance du Roi Souterrain.</h1>
-                <p className="mt-6 max-w-3xl text-lg text-gray-300">
-                  Cette page rassemble l&apos;ensemble du lore pour etre lu comme un roman chronologique. Chaque chapitre garde l&apos;elegance du recit original
-                  tout en offrant des reperes visuels et temporels afin que rien ne rompe la fluidite de la lecture.
-                </p>
-              </div>
-            </section>
-
-            <div className="mt-12 grid gap-6">
-              <Card className="border-white/5 bg-dark-900/70">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-white">Prologue - Le Japon n&apos;a pas toujours ete lumiere</CardTitle>
-                  <CardDescription className="text-base leading-relaxed text-gray-300">
-                    &quot;Le Japon n&apos;a pas toujours ete un empire de lumiere. Il fut un temps ou les Dieux se taisaient et ou les hommes affrontaient des
-                    creatures dont les noms ont ete effaces des chroniques.&quot;
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 text-gray-300">
-                  <p>
-                    Le clan Washu se distingue des autres par un savoir interdit et une obsession pour la veritable nature humaine. Leur ascension
-                    rapide et brutale est enveloppee de rituels clandestins et de pactes avec des divinites que l&apos;on croyait disparues.
-                  </p>
-                  <p>
-                    Lorsque les seigneurs de guerre s&apos;epuisent, les Washu se tournent vers les forces qui se cachent sous les temples. Certains
-                    pretendent qu&apos;ils ont trouve un moyen de se nourrir autrement que les hommes, d&apos;autres assurent qu&apos;ils conversent avec des
-                    divinites mortes depuis longtemps.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            <section className="mt-16">
-              <div className="relative mt-12 pl-6 md:pl-16">
-                <div className="absolute left-6 top-0 hidden h-full w-px bg-gradient-to-b from-white/20 via-white/5 to-transparent md:block" />
-                <div className="space-y-12">
-                  {loreChapters.map((chapter, index) => (
-                    <article key={chapter.chapter} className="relative md:pl-16">
-                      <div className="absolute -left-1 top-6 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-dark-950/90 md:-left-5">
-                        <div className={`h-3 w-3 rounded-full ${chapter.accent.dot}`} />
-                      </div>
-                      <div className={`relative overflow-hidden rounded-3xl border ${chapter.accent.border} bg-dark-900/70 p-6`}>
-                        <div className={`pointer-events-none absolute inset-0 opacity-70 bg-gradient-to-br ${chapter.accent.glow}`} />
-                        <div className="relative flex flex-col gap-6 md:flex-row md:items-start">
-                          <div className="md:w-1/3">
-                            <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-gray-400">
-                              <chapter.icon className="h-5 w-5 text-white" />
-                              <span>{chapter.era}</span>
-                            </div>
-                            <h3 className="mt-3 text-2xl font-semibold text-white">{chapter.chapter}</h3>
-                            <p className="text-primary-200">{chapter.subtitle}</p>
-                            <p className="mt-4 leading-relaxed text-gray-300">{chapter.summary}</p>
-                          </div>
-                          <div className="space-y-4 md:w-2/3">
-                            {chapter.events.map((event) => (
-                              <div
-                                key={`${chapter.chapter}-${event.year}-${event.title}`}
-                                className={`rounded-2xl border ${chapter.accent.eventBorder} ${chapter.accent.eventBg} p-4`}
-                              >
-                                <p className="text-sm font-semibold text-primary-200">{event.year}</p>
-                                <h4 className="text-xl text-white">{event.title}</h4>
-                                <p className="mt-2 leading-relaxed text-gray-200">{event.description}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      {index !== loreChapters.length - 1 && (
-                        <div className="absolute left-3 top-full hidden h-12 w-px bg-gradient-to-b from-white/10 to-transparent md:block" />
-                      )}
-                    </article>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <section className="mt-16">
-              <Card className="border-primary-500/40 bg-dark-900/80">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-white">{presentDay.title}</CardTitle>
-                  <CardDescription className="text-base leading-relaxed text-gray-300">
-                    Suite aux expeditions du CCG et d&apos;allies clandestins, Shinjuku renait lentement. Mais sous la surface, chaque faction guette le
-                    retour du Roi Souterrain.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="leading-relaxed text-gray-200">{presentDay.description}</p>
-                </CardContent>
-              </Card>
-            </section>
-          </>
-        )}
-      </div>
-      {modalImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/80"
-            aria-label="Fermer l'arbre en plein ecran"
-            onClick={() => setModalImage(null)}
-          />
-          <div className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/10 bg-dark-950/90 p-4 shadow-2xl">
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setModalImage(null)}
-                className="rounded-full border border-white/20 px-4 py-1 text-sm font-semibold text-white transition hover:border-primary-300"
+              <p className="text-sm uppercase tracking-[0.4em] text-primary-300">Lore du serveur</p>
+              <h2 className="mt-4 text-3xl font-semibold text-white">Choisissez votre lecture</h2>
+              <p className="mt-3 text-gray-400">
+                Accedez soit au panorama global, soit aux destins particuliers des clans.
+              </p>
+              <motion.div
+                className="mt-10 grid gap-6 md:grid-cols-2"
+                variants={listParent}
+                initial="hidden"
+                animate="visible"
               >
-                Fermer
-              </button>
-            </div>
-            <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-2xl border border-white/10">
-              <Image
-                src={modalImage.src}
-                alt={modalImage.alt}
-                fill
-                sizes="100vw"
-                className="object-contain"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+                {loreEntryOptions.map((option, index) => (
+                  <motion.button
+                    key={option.title}
+                    type="button"
+                    onClick={() => setActiveView(option.view)}
+                    className="group block text-left outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
+                    variants={listItem}
+                    custom={index}
+                    whileHover={{ y: -10, scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={hoverSpring}
+                  >
+                    <Card className="h-full border-white/10 bg-dark-900/80 transition-all duration-300 group-hover:-translate-y-1 group-hover:border-primary-400/40">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-2xl text-white">{option.title}</CardTitle>
+                          <span className="rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-wide text-gray-300">
+                            {option.badge}
+                          </span>
+                        </div>
+                        <CardDescription className="text-base leading-relaxed text-gray-300">
+                          {option.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-2 text-primary-200">
+                          <span>{option.cta}</span>
+                          <span aria-hidden>{">"}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.button>
+                ))}
+              </motion.div>
+            </motion.section>
+          ) : (
+            <motion.div
+              key={`view-${activeView}`}
+              className="space-y-8"
+              variants={fadeVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <motion.div
+                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-dark-900/60 px-4 py-3"
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.3 }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveView(null)
+                    setSelectedClan(null)
+                  }}
+                  className="text-sm font-semibold text-primary-200 transition hover:text-primary-100"
+                >
+                  <p>Retour a la page principale</p>
+                </button>
+                <p className="text-xs uppercase tracking-[0.4em] text-gray-400">
+                  Vous consultez : {viewLabels[activeView]}
+                </p>
+              </motion.div>
+                      <AnimatePresence mode="wait">
+                        {activeView === "clan" && (
+                          <motion.section
+                            id="clan-lore"
+                            className="space-y-10"
+                            key="clan-view"
+                            variants={fadeVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                          >
+                          {!activeClan && (
+                            <>
+                              <motion.div className="grid gap-6 md:grid-cols-2" variants={listParent} initial="hidden" animate="visible">
+                                {clanLoreEntries.map((clan, index) => (
+                                  <motion.button
+                                    key={clan.id}
+                                    type="button"
+                                    onClick={() => setSelectedClan(clan.id)}
+                                    className="group text-left outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
+                                    variants={listItem}
+                                    custom={index}
+                                    whileHover={{ y: -6, scale: 1.005 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    transition={hoverSpring}
+                                  >
+                                    <Card className="h-full border border-white/10 bg-dark-900/70 transition-colors hover:border-primary-400/40">
+                                      <CardHeader className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                          <CardTitle className="text-2xl text-white">{clan.name}</CardTitle>
+                                          <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-widest text-gray-300">
+                                            {clan.status}
+                                          </span>
+                                        </div>
+                                        <CardDescription className="text-base leading-relaxed text-gray-300">{clan.description}</CardDescription>
+                                        <p className="text-sm text-primary-200">Vigilance : {clan.vigilance}</p>
+                                      </CardHeader>
+                                      <CardContent className="flex items-center gap-2 text-primary-200">
+                                        <Users className="h-4 w-4" />
+                                        <span>Lire ce clan</span>
+                                      </CardContent>
+                                    </Card>
+                                  </motion.button>
+                                ))}
+                              </motion.div>
+                              <motion.div variants={scaleVariants} initial="hidden" animate="visible" className="rounded-2xl border border-dashed border-white/10 bg-dark-900/60">
+                                <CardContent className="py-10 text-center text-gray-400">Choisissez un clan pour afficher ses details.</CardContent>
+                              </motion.div>
+                            </>
+                          )}
+
+                          {activeClan && (
+                            <motion.div key={activeClan.id} className="space-y-10" variants={fadeVariants} initial="hidden" animate="visible" exit="exit">
+                              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-dark-900/60 px-4 py-3">
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedClan(null)}
+                                  className="text-sm font-semibold text-primary-200 transition hover:text-primary-100"
+                                >
+                                  <p>Retour aux clans</p>
+                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => selectRelativeClan(-1)}
+                                    disabled={clanLoreEntries.length < 2}
+                                    className="rounded-full border border-white/15 px-4 py-2 text-sm text-white transition disabled:cursor-not-allowed disabled:opacity-40 hover:border-primary-300"
+                                    aria-label="Voir le clan precedent"
+                                  >
+                                    {"<"}
+                                  </button>
+                                  <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
+                                    {activeClanIndex + 1}/{clanLoreEntries.length}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => selectRelativeClan(1)}
+                                    disabled={clanLoreEntries.length < 2}
+                                    className="rounded-full border border-white/15 px-4 py-2 text-sm text-white transition disabled:cursor-not-allowed disabled:opacity-40 hover:border-primary-300"
+                                    aria-label="Voir le clan suivant"
+                                  >
+                                    {">"}
+                                  </button>
+                                </div>
+                              </div>
+                              <section className="grid gap-6 rounded-3xl border border-white/10 bg-dark-900/70 p-6 lg:grid-cols-2">
+                                <div>
+                                  <p className="text-sm uppercase tracking-[0.4em] text-primary-300">Clan selectionne</p>
+                                  <h2 className="mt-2 text-3xl font-semibold text-white">{activeClan.name}</h2>
+                                  <p className="mt-4 text-lg text-gray-300">{activeClan.lore}</p>
+                                </div>
+                                <div className="space-y-4">
+                                  <div className="rounded-2xl border border-dashed border-white/15 bg-dark-950/60 p-6 text-center">
+                                    <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Arbre genealogique</p>
+                                    <div className="mt-4">
+                                      {activeClan.crestImage ? (
+                                        <motion.button
+                                          type="button"
+                                          onClick={() => handleImageReveal("crest")}
+                                          className="group relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-dark-900/60 text-gray-500 transition hover:border-primary-400 focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
+                                          aria-label="Afficher le logo en grand"
+                                          whileHover={{ y: -4, scale: 1.01 }}
+                                          whileTap={{ scale: 0.98 }}
+                                          transition={hoverSpring}
+                                        >
+                                          <Image
+                                            src={activeClan.crestImage.src}
+                                            alt={activeClan.crestImage.alt}
+                                            fill
+                                            sizes="(min-width: 1024px) 360px, 100vw"
+                                            className={`object-cover transition duration-500 ${revealedImages.crest ? "opacity-100 blur-0" : "opacity-30 blur-sm"}`}
+                                            priority
+                                          />
+                                          {!revealedImages.crest ? (
+                                            <span className="absolute inset-0 flex items-center justify-center bg-black/45 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
+                                              Spoiler : cliquer pour reveler
+                                            </span>
+                                          ) : (
+                                            <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
+                                              Voir en plein ecran
+                                            </span>
+                                          )}
+                                        </motion.button>
+                                      ) : (
+                                        <div className="flex h-48 items-center justify-center rounded-xl border border-white/10 bg-dark-900/60 text-gray-500">
+                                          {activeClan.crestNote ?? "Ajoutez une illustration de clan."}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="rounded-2xl border border-white/10 bg-dark-950/60 p-6">
+                                    <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Points clefs</p>
+                                    <ul className="mt-4 space-y-3 text-gray-200">
+                                      {activeClan.highlights.map((highlight) => (
+                                        <li key={highlight} className="flex gap-2">
+                                          <span className="mt-1 h-2 w-2 rounded-full bg-primary-300" />
+                                          <span>{highlight}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
+                              </section>
+
+                              <section className="grid gap-6 lg:grid-cols-3">
+                                <Card className="border-white/10 bg-dark-900/70 lg:col-span-2">
+                                  <CardHeader>
+                                    <CardTitle className="text-xl text-white">Moments determinants</CardTitle>
+                                    <CardDescription className="text-gray-300">Balises pour retracer l&apos;influence du clan.</CardDescription>
+                                  </CardHeader>
+                                  <CardContent className="space-y-4">
+                                    {activeClan.timeline.map((step) => (
+                                      <motion.div
+                                        key={`${step.year}-${step.title}`}
+                                        className="rounded-2xl border border-white/10 bg-dark-950/60 p-4"
+                                        whileHover={{ scale: 1.01, x: 6 }}
+                                        transition={hoverSpring}
+                                      >
+                                        <p className="text-sm font-semibold text-primary-200">{step.year}</p>
+                                        <p className="text-lg text-white">{step.title}</p>
+                                      </motion.div>
+                                    ))}
+                                  </CardContent>
+                                </Card>
+
+                                <Card className="border-dashed border-primary-400/30 bg-dark-900/70">
+                                  <CardHeader>
+                                    <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Arbre genealogique</p>
+                                    <CardDescription className="text-gray-300">
+                                      {activeClan.genealogyImage
+                                        ? ""
+                                        : activeClan.genealogyNote ?? "Ajoutez l&apos;arbre genealogique."}
+                                    </CardDescription>
+                                  </CardHeader>
+                                  <CardContent>
+                                    {activeClan.genealogyImage ? (
+                                      <motion.button
+                                        type="button"
+                                        onClick={() => handleImageReveal("genealogy")}
+                                        className="group w-full rounded-xl border border-white/10 bg-dark-950/60 text-left transition hover:border-primary-400 focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
+                                        aria-label="Afficher l'arbre genealogique"
+                                        whileHover={{ y: -4, scale: 1.01 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        transition={hoverSpring}
+                                      >
+                                        <div className="relative flex h-64 items-center justify-center overflow-hidden rounded-xl">
+                                          <Image
+                                            src={activeClan.genealogyImage.src}
+                                            alt={activeClan.genealogyImage.alt}
+                                            fill
+                                            sizes="(min-width: 1024px) 420px, 100vw"
+                                            className={`object-cover transition duration-500 ${revealedImages.genealogy ? "opacity-100 blur-0" : "opacity-30 blur-sm"}`}
+                                          />
+                                          {!revealedImages.genealogy ? (
+                                            <span className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
+                                              Spoiler : cliquer pour reveler
+                                            </span>
+                                          ) : (
+                                            <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
+                                              Voir en plein ecran
+                                            </span>
+                                          )}
+                                        </div>
+                                      </motion.button>
+                                    ) : (
+                                      <div className="flex h-64 items-center justify-center rounded-xl border border-white/10 bg-dark-950/60 text-center text-gray-400">
+                                        Zone reservee pour importer ou dessiner l&apos;arbre.
+                                      </div>
+                                    )}
+                                  </CardContent>
+                                </Card>
+                              </section>
+                            </motion.div>
+                          )}
+                          </motion.section>
+                        )}
+                      </AnimatePresence>
+                      <AnimatePresence mode="wait">
+                        {activeView === "global" && (
+                          <motion.div key="global-view" variants={fadeVariants} initial="hidden" animate="visible" exit="exit">
+                            <section id="global-lore" className="relative overflow-hidden rounded-3xl border border-white/5 bg-gradient-to-br from-dark-900 via-dark-950 to-black p-8 md:p-12">
+                              <div className="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.15),_transparent_55%)]" />
+                              <div className="relative">
+                                <p className="mb-4 text-sm uppercase tracking-[0.4em] text-primary-300">Lore officiel du serveur</p>
+                                <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl">Lignes de sang, pactes oublies et renaissance du Roi Souterrain.</h1>
+                                <p className="mt-6 max-w-3xl text-lg text-gray-300">
+                                  Cette page rassemble l&apos;ensemble du lore pour etre lu comme un roman chronologique. Chaque chapitre garde l&apos;elegance du recit original
+                                  tout en offrant des reperes visuels et temporels afin que rien ne rompe la fluidite de la lecture.
+                                </p>
+                              </div>
+                            </section>
+
+                            <motion.div className="mt-12 grid gap-6" variants={listParent} initial="hidden" animate="visible">
+                              <motion.div variants={listItem}>
+                                <Card className="border-white/5 bg-dark-900/70">
+                                  <CardHeader>
+                                    <CardTitle className="text-2xl text-white">Prologue - Le Japon n&apos;a pas toujours ete lumiere</CardTitle>
+                                    <CardDescription className="text-base leading-relaxed text-gray-300">
+                                      &quot;Le Japon n&apos;a pas toujours ete un empire de lumiere. Il fut un temps ou les Dieux se taisaient et ou les hommes affrontaient des
+                                      creatures dont les noms ont ete effaces des chroniques.&quot;
+                                    </CardDescription>
+                                  </CardHeader>
+                                  <CardContent className="space-y-4 text-gray-300">
+                                    <p>
+                                      Le clan Washu se distingue des autres par un savoir interdit et une obsession pour la veritable nature humaine. Leur ascension
+                                      rapide et brutale est enveloppee de rituels clandestins et de pactes avec des divinites que l&apos;on croyait disparues.
+                                    </p>
+                                    <p>
+                                      Lorsque les seigneurs de guerre s&apos;epuisent, les Washu se tournent vers les forces qui se cachent sous les temples. Certains
+                                      pretendent qu&apos;ils ont trouve un moyen de se nourrir autrement que les hommes, d&apos;autres assurent qu&apos;ils conversent avec des
+                                      divinites mortes depuis longtemps.
+                                    </p>
+                                  </CardContent>
+                                </Card>
+                              </motion.div>
+                            </motion.div>
+
+                            <section className="mt-16">
+                              <div className="relative mt-12 pl-6 md:pl-16">
+                                <div className="absolute left-6 top-0 hidden h-full w-px bg-gradient-to-b from-white/20 via-white/5 to-transparent md:block" />
+                                <motion.div className="space-y-12" variants={listParent} initial="hidden" animate="visible">
+                                  {loreChapters.map((chapter) => (
+                                    <motion.article key={chapter.chapter} className="relative md:pl-16" variants={listItem}>
+                                      <div className="absolute -left-1 top-6 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-dark-950/90 md:-left-5">
+                                        <div className={`h-3 w-3 rounded-full ${chapter.accent.dot}`} />
+                                      </div>
+                                      <div className={`relative overflow-hidden rounded-3xl border ${chapter.accent.border} bg-dark-900/70 p-6`}>
+                                        <div className={`pointer-events-none absolute inset-0 opacity-70 bg-gradient-to-br ${chapter.accent.glow}`} />
+                                        <div className="relative flex flex-col gap-6 md:flex-row md:items-start">
+                                          <div className="md:w-1/3">
+                                            <div className="flex items-center gap-3 text-sm uppercase tracking-[0.3em] text-gray-400">
+                                              <chapter.icon className="h-5 w-5 text-white" />
+                                              <span>{chapter.era}</span>
+                                            </div>
+                                            <h3 className="mt-3 text-2xl font-semibold text-white">{chapter.chapter}</h3>
+                                            <p className="text-primary-200">{chapter.subtitle}</p>
+                                            <p className="mt-4 leading-relaxed text-gray-300">{chapter.summary}</p>
+                                          </div>
+                                          <div className="space-y-4 md:w-2/3">
+                                            {chapter.events.map((event) => (
+                                              <motion.div
+                                                key={`${chapter.chapter}-${event.year}-${event.title}`}
+                                                className={`rounded-2xl border ${chapter.accent.eventBorder} ${chapter.accent.eventBg} p-4`}
+                                                variants={scaleVariants}
+                                                initial="hidden"
+                                                whileInView="visible"
+                                                viewport={{ once: true, amount: 0.2 }}
+                                              >
+                                                <p className="text-sm font-semibold text-primary-200">{event.year}</p>
+                                                <h4 className="text-xl text-white">{event.title}</h4>
+                                                <p className="mt-2 leading-relaxed text-gray-200">{event.description}</p>
+                                              </motion.div>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </motion.article>
+                                  ))}
+                                </motion.div>
+                              </div>
+                            </section>
+
+                            <section className="mt-16">
+                              <Card className="border-primary-500/40 bg-dark-900/80">
+                                <CardHeader>
+                                  <CardTitle className="text-2xl text-white">{presentDay.title}</CardTitle>
+                                  <CardDescription className="text-base leading-relaxed text-gray-300">
+                                    Suite aux expeditions du CCG et d&apos;allies clandestins, Shinjuku renait lentement. Mais sous la surface, chaque faction guette le
+                                    retour du Roi Souterrain.
+                                  </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                  <p className="leading-relaxed text-gray-200">{presentDay.description}</p>
+                                </CardContent>
+                              </Card>
+                            </section>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <AnimatePresence>
+        {modalImage && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.button
+              type="button"
+              className="absolute inset-0 bg-black/80"
+              aria-label="Fermer l'image en plein ecran"
+              onClick={() => setModalImage(null)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <motion.div
+              className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/10 bg-dark-950/90 p-4 shadow-2xl"
+              variants={scaleVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setModalImage(null)}
+                  className="rounded-full border border-white/20 px-4 py-1 text-sm font-semibold text-white transition hover:border-primary-300"
+                >
+                  Fermer
+                </button>
+              </div>
+              <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-2xl border border-white/10">
+                <Image
+                  src={modalImage.src}
+                  alt={modalImage.alt}
+                  fill
+                  sizes="100vw"
+                  className="object-contain"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
