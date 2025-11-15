@@ -1,10 +1,13 @@
 "use client"
 
 import Image, { type StaticImageData } from "next/image"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import placeholderClanCrest from "@/app/assets/placeholder1.jpg"
 import placeholderGenealogy from "@/app/assets/placeholder2.jpg"
+import koshinCrest from "@/app/assets/Koshin/logo.png"
+import yoshimuraCrest from "@/app/assets/Yoshimura/arbre.png"
+import yoshimuraGenealogy from "@/app/assets/Yoshimura/logo.png"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import type { LucideIcon } from "lucide-react"
 import { Crown, Flame, Layers, Orbit, ScrollText, Shield, Swords, Users } from "lucide-react"
@@ -284,16 +287,207 @@ const clanLoreEntries: ClanLore[] = [
     }
   },
   {
-    id: "placeholder",
-    name: "Autres clans",
-    status: "Bientot",
-    description: "Selection en cours de conception. Ajoutez vos prochains clans ici.",
-    vigilance: "Espace reserve.",
-    lore: "",
-    highlights: [],
-    timeline: [],
-    crestNote: "Ajoutez une illustration pour ce clan.",
-    genealogyNote: "Prevoyez ici l'arbre genealogique du clan."
+    id: "arima",
+    name: "Clan Arima",
+    status: "Disponible",
+    description: "Lames fantomes loyales au Washu, passes maitres dans l'infiltration et l'assassinat.",
+    vigilance: "Descendance soumise a des rituels ninjas et a des maladies inexplicables.",
+    lore:
+      "Nul ne sait d'ou provient la famille Arima. Toujours dans l'ombre du clan Washu, ils servaient le jour comme intendants et la nuit comme assassins. Leurs talents de ninjas, leurs armes maudites et des aptitudes genetiques rares leur ont permis d'affronter les premiers Oni. Lies au Washu par un pacte silencieux, ils formerent en 1569 les Traqueurs de l'Ombre et gagnerent une reputation legendaires. Beaucoup mouraient jeunes, ronges par des maux inconnus, mais les survivants accompagnerent les Washu jusque dans la creation du CCG. Akihiko Arima devint la premiere Distinction d'Honneur du Dragon apres la Nuit des Larmes Sanglantes et dirigea l'escouade speciale. Depuis, les Arima perpetuent un art martial base sur la dissimulation et la precision lethale.",
+    highlights: [
+      "Service secret du clan Washu depuis des siecles.",
+      "Formation des Traqueurs de l'Ombre et des meilleurs samourais.",
+      "Akihiko Arima, premier inspecteur adoube Dragon et chef d'escouade speciale."
+    ],
+    timeline: [
+      { year: "Ere ancienne", title: "Les Arima jurent fidelite aux Washu et deviennent leurs ombres." },
+      { year: "1569", title: "Creation et entrainement des Traqueurs de l'Ombre." },
+      { year: "Nuit des Larmes Sanglantes", title: "Akihiko Arima recoit la Distinction d'Honneur du Dragon." }
+    ],
+    crestNote: "Ajoutez le mon ninja du clan Arima.",
+    genealogyNote: "Visualisez la lignee reliant les ombres officielles aux armes secretes.",
+    crestImage: {
+      src: placeholderClanCrest,
+      alt: "Illustration temporaire du clan Arima"
+    },
+    genealogyImage: {
+      src: placeholderGenealogy,
+      alt: "Placeholder pour l'arbre genealogique Arima"
+    }
+  },
+  {
+    id: "suzuya",
+    name: "Clan Suzuya",
+    status: "Disponible",
+    description: "Dernier clan adosse au CCG, redoute pour sa violence chirurgicale.",
+    vigilance: "Descendance marquee par des traumatismes et une biologie atypique.",
+    lore:
+      "Le clan Suzuya nait avec Tetsue, orphelin vendu a une organisation de goules. Dans les arenes clandestines, il tue sa premiere proie avec une froide sauvagerie, survivant quinze ans de torture avant d'etre libere par le CCG. Intrigue par son instinct meurtrier, le CCG l'integre puis l'eleve au rang des inspecteurs les plus craints. Tetsue se marie et fonde une lignee d'agents pour qui la brutalite precise est devenue un art. Aujourd'hui les Suzuya forment une famille mythique : ils frisent la folie mais restent des armes parfaites pour les missions impossibles. Leur methode demeure un mystere, oscillant entre mutation genetique et entrainement inhumain.",
+    highlights: [
+      "Origine dans les arenes clandestines dirigees par des goules.",
+      "Integration directe au CCG apres une liberation sanglante.",
+      "Style de combat base sur une violence methodique sans egale."
+    ],
+    timeline: [
+      { year: "Enfance de Tetsue", title: "Esclave dans une arene, il abat sa premiere goule." },
+      { year: "Integration au CCG", title: "Tetsue est libere puis recrute comme agent experimental." },
+      { year: "Generations suivantes", title: "Le clan devient une dynastie d'inspecteurs elitaires." }
+    ],
+    crestNote: "Ajoutez un symbole representant le fil tranchant des Suzuya.",
+    genealogyNote: "Prevoir les branches reliant Tetsue aux nouvelles generations.",
+    crestImage: {
+      src: placeholderClanCrest,
+      alt: "Illustration temporaire du clan Suzuya"
+    },
+    genealogyImage: {
+      src: placeholderGenealogy,
+      alt: "Placeholder pour l'arbre genealogique Suzuya"
+    }
+  },
+  {
+    id: "yoshimura",
+    name: "Clan Yoshimura",
+    status: "Disponible",
+    description: "Famille mythique d'assassins goules, maitres de la Chouette.",
+    vigilance: "Rumeurs persistantes sur une survie clandestine apres leur extinction officielle.",
+    lore:
+      "A Tokyo, le nom Yoshimura glacait autant le CCG que les goules. Leur corps evoluait sans limites jusqu'a engendrer la forme ultime de kakuja : la Chouette, symbole de jugement. Les Yoshimura ne chassaient pas pour survivre mais pour executer des cibles designees, comme s'ils obeissaient a une cause superieure. Lors de la Nuit des Larmes Sanglantes, Atsuhiro Yoshimura deploya la Chouette Parfaite et affronta les legions du CCG avant d'etre abattu par les Washu. Depuis, le clan est officiellement eteint, mais des scenes de crime recentes portent leur signature. Certains affirment que les Yoshimura agissent encore, choisissant cette fois des proies de survie plutot que de jugement.",
+    highlights: [
+      "Mutations organiques donnant naissance a la Chouette ultime.",
+      "Assassinats cibles realises pour une cause inconnue.",
+      "Affrontement historique d'Atsuhiro durant la Nuit des Larmes Sanglantes."
+    ],
+    timeline: [
+      { year: "Epoques anciennes", title: "Les Yoshimura deviennent juges et bourreaux nocturnes." },
+      { year: "Nuit des Larmes Sanglantes", title: "Atsuhiro revele la Chouette Parfaite face au CCG." },
+      { year: "Epoque moderne", title: "Le clan disparait officiellement mais laisse des traces suspectes." }
+    ],
+    crestNote: "Inserer une illustration de la Chouette.",
+    genealogyNote: "Ajoutez les ramifications des heritiers caches.",
+    crestImage: {
+      src: yoshimuraCrest,
+      alt: "Illustration du clan Yoshimura"
+    },
+    genealogyImage: {
+      src: yoshimuraGenealogy,
+      alt: "Arbre genealogique du clan Yoshimura"
+    }
+  },
+  {
+    id: "tsukiyama",
+    name: "Clan Tsukiyama",
+    status: "Disponible",
+    description: "Dynastie de goules esthetes infiltrees dans l'aristocratie humaine.",
+    vigilance: "Connexion directe avec le Restaurant des Goules et les Roses secretes.",
+    lore:
+      "Des l'ere Edo, les Tsukiyama gerent les reseaux populaires autant que les salons des goules. Ils soutiennent Oda Nobunaga en equipant ses armees afin de mieux se nourrir. Comprenant que la survie passe par les hautes spheres, ils fondent Les Roses, organisation chargee de selectionner les meilleures proies tout en masquant leurs crimes. A l'ere Meiji, ils investissent industrie, art et politique pour se fondre dans la modernite. Aujourd'hui, leurs conglomerats influencent la finance et la culture, tandis que leurs banquets restent legendaires parmi les goules gourmet. Derriere l'opulence, ils protegent un empire de predation raffinee.",
+    highlights: [
+      "Soutien strategique a Oda Nobunaga pour acceder aux elites.",
+      "Creation des Roses pour masquer les chasses et choisir les victimes.",
+      "Implantation mondiale via entreprises, art et politiques."
+    ],
+    timeline: [
+      { year: "Ere Edo", title: "Fournissent armes et mercenaires aux seigneurs humains." },
+      { year: "Ere Meiji", title: "Investissements massifs dans l'industrie et la finance." },
+      { year: "Epoque actuelle", title: "Alliance discrete avec le Restaurant des Goules." }
+    ],
+    crestNote: "Inserez le blason floral des Tsukiyama.",
+    genealogyNote: "Prevoir les branches reliant Les Roses au tronc familial.",
+    crestImage: {
+      src: placeholderClanCrest,
+      alt: "Illustration temporaire du clan Tsukiyama"
+    },
+    genealogyImage: {
+      src: placeholderGenealogy,
+      alt: "Placeholder pour l'arbre genealogique Tsukiyama"
+    }
+  },
+  {
+    id: "kirishima",
+    name: "Clan Kirishima",
+    status: "Disponible",
+    description: "Famille de goules yakuzas forgee sur l'honneur et l'armure d'Arata.",
+    vigilance: "Clan fragmente depuis la mort d'Arata, mais heritage toujours vivant.",
+    lore:
+      "Dans les annees 70, Yukimura Kirishima fonde un clan de goules inspire des codes samourai. Honneur, fidelite et protection mutuelle soudent leur empire criminel. Les annees 90 marquent l'apogee sous Arata Kirishima, leader charismatique possedant un kagune-armure qui recouvre son corps. Lors de la Nuit des Larmes Sanglantes, il aurait elimine 87 inspecteurs, avant de mourir dans des circonstances floues. Son corps devient la base d'une quinque legendaire, plongeant le clan dans le chaos. Sans son chef, les factions rivales se dechirent et l'organisation s'effondre. Pourtant, le nom Kirishima continue de circuler : certains anciens membres cherchent a reunifier la famille et a ranimer l'honneur perdu.",
+    highlights: [
+      "Fondation type yakuza basee sur les codes samourai.",
+      "Arata Kirishima et son kagune-armure quasi invincible.",
+      "La quinque Arata forgee sur sa depouille apres la Nuit des Larmes Sanglantes."
+    ],
+    timeline: [
+      { year: "Annees 70", title: "Yukimura Kirishima etablit le clan en suivant l'honneur samourai." },
+      { year: "Annees 90", title: "Arata regne et affronte le CCG durant la Nuit des Larmes Sanglantes." },
+      { year: "Epoque actuelle", title: "Factions dissidentes tentent de reconstruire la famille." }
+    ],
+    crestNote: "Ajoutez le symbole du kagune-armure.",
+    genealogyNote: "Cartographier les factions issues de la chute d'Arata.",
+    crestImage: {
+      src: placeholderClanCrest,
+      alt: "Illustration temporaire du clan Kirishima"
+    },
+    genealogyImage: {
+      src: placeholderGenealogy,
+      alt: "Placeholder pour l'arbre genealogique Kirishima"
+    }
+  },
+  {
+    id: "koshin",
+    name: "Clan Koshin",
+    status: "Disponible",
+    description: "Manipulateurs psychiques de Kabukicho, architectes de l'esprit.",
+    vigilance: "Neutres mais capables de remodeler memoires et perceptions.",
+    lore:
+      "Nes dans l'ombre des premiers conflits, les Koshin ont prefere etudier l'esprit plutot que dominer par la chair. Leur fondateur, Renzaburo, devorait les savants pour absorber leur savoir et aurait etabli le premier contact mental entre ghoul et humain. Depuis, le clan enseigne que la victoire n'existe que si l'esprit adverse change de prison. Ses membres maitrisent l'effacement de souvenirs, la creation de liens telepathiques et l'influence emotionnelle. Leur apparence lumineuse contraste avec leurs dons, ce qui leur vaut les surnoms d'anges menteurs. Aujourd'hui, sous Jin Koshin, l'Architecte du Silence, ils servent de conseillers ou negociateurs, imposant leur paix par des pactes invisibles. Beaucoup redoutent le jour ou ils decideront de remodeler le monde par la pensee seule.",
+    highlights: [
+      "Philosophie basee sur la maitrise de la conscience et de la memoire.",
+      "Techniques psychiques allant de l'effacement a la suggestion collective.",
+      "Isolation volontaire sous la direction de Jin Koshin, dit l'Architecte du Silence."
+    ],
+    timeline: [
+      { year: "Origines souterraines", title: "Renzaburo Koshin experimente le lien esprit-ghoul." },
+      { year: "Epoques de conflits", title: "Le clan impose la mediation mentale entre familles rivales." },
+      { year: "Ere actuelle", title: "Jin Koshin tisse des alliances invisibles a Kabukicho." }
+    ],
+    crestNote: "Inserer la silhouette doree des yeux du mensonge.",
+    genealogyNote: "Tracer la lignee reliant Renzaburo a Jin Koshin.",
+    crestImage: {
+      src: placeholderGenealogy,
+      alt: "Illustration du clan Koshin"
+    },
+    genealogyImage: {
+      src: koshinCrest,
+      alt: "Placeholder pour l'arbre genealogique Koshin"
+    }
+  },
+  {
+    id: "kuroiwa",
+    name: "Clan Kuroiwa",
+    status: "Disponible",
+    description: "Dynastie d'inspecteurs de Shibuya, figures de la force brute du CCG.",
+    vigilance: "Loyaux jusqu'au sacrifice, allergiques aux zones grises.",
+    lore:
+      "Nes pendant la restructuration suivant les premieres insurrections, les Kuroiwa representent le CCG des pionniers. Pour eux, la mission prime sur la gloire et la bureaucratie. Ils refusent les compromis et definissent la justice en termes clairs: une goule est une menace a abattre. Massifs, entraines depuis l'enfance, ils preferent leurs poings a la technologie, maniants meme leurs quinques comme des masses. Leur reputation quasi mythique vient d'exploits ou certains ont terrasse des goules de rang A a mains nues. Dans un CCG devenu technocratique, ils incarnent un vestige indispensable de courage brut. Lorsque les situations degenerent, c'est encore eux que l'on envoie en premiere ligne.",
+    highlights: [
+      "Devouement total a la mission du CCG, loin des intrigues politiques.",
+      "Capacites physiques exceptionnelles et style de combat frontal.",
+      "Quinques lourdes maniees comme des prolongements de leur corps."
+    ],
+    timeline: [
+      { year: "Restructuration initiale", title: "Fondation du clan comme corps de choc de Shibuya." },
+      { year: "Sommet des insurrections", title: "Exploits contres les goules de rang A a mains nues." },
+      { year: "Epoque moderne", title: "Derniers remparts envoyes quand toutes les autres tactiques echouent." }
+    ],
+    crestNote: "Prevoir un symbole massif representant leurs poings armes.",
+    genealogyNote: "Lister les generations d'inspecteurs tombes sur le terrain.",
+    crestImage: {
+      src: placeholderClanCrest,
+      alt: "Illustration temporaire du clan Kuroiwa"
+    },
+    genealogyImage: {
+      src: placeholderGenealogy,
+      alt: "Placeholder pour l'arbre genealogique Kuroiwa"
+    }
   }
 ]
 
@@ -310,7 +504,7 @@ const loreEntryOptions: {
     description: "Visualisez les histoires propres a chaque clan, leurs figures et leurs serments.",
     cta: "Voir l'exemple",
     view: "clan",
-    badge: "Placeholder"
+    badge: "Disponible"
   },
   {
     title: "Lore global",
@@ -324,12 +518,19 @@ const loreEntryOptions: {
 export default function LorePage() {
   const [activeView, setActiveView] = useState<LoreView | null>(null)
   const [selectedClan, setSelectedClan] = useState<string | null>(null)
+  const [revealedImages, setRevealedImages] = useState({ crest: false, genealogy: false })
+  const [modalImage, setModalImage] = useState<{ src: StaticImageData; alt: string } | null>(null)
   const viewLabels: Record<LoreView, string> = {
     clan: "Lore de clan",
     global: "Lore global"
   }
   const activeClanIndex = selectedClan ? clanLoreEntries.findIndex((clan) => clan.id === selectedClan) : -1
   const activeClan = activeClanIndex >= 0 ? clanLoreEntries[activeClanIndex] : null
+
+  useEffect(() => {
+    setRevealedImages({ crest: false, genealogy: false })
+    setModalImage(null)
+  }, [activeClanIndex])
 
   const selectRelativeClan = (direction: 1 | -1) => {
     if (!clanLoreEntries.length) {
@@ -341,6 +542,18 @@ export default function LorePage() {
     }
     const nextIndex = (activeClanIndex + direction + clanLoreEntries.length) % clanLoreEntries.length
     setSelectedClan(clanLoreEntries[nextIndex].id)
+  }
+
+  const handleImageReveal = (type: "crest" | "genealogy") => {
+    const image = type === "crest" ? activeClan?.crestImage : activeClan?.genealogyImage
+    if (!image) {
+      return
+    }
+    if (!revealedImages[type]) {
+      setRevealedImages((prev) => ({ ...prev, [type]: true }))
+      return
+    }
+    setModalImage(image)
   }
 
   return (
@@ -372,7 +585,7 @@ export default function LorePage() {
                     <CardContent>
                       <div className="flex items-center gap-2 text-primary-200">
                         <span>{option.cta}</span>
-                        <span aria-hidden>→</span>
+                        <span aria-hidden>{">"}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -392,7 +605,7 @@ export default function LorePage() {
               }}
               className="text-sm font-semibold text-primary-200 transition hover:text-primary-100"
             >
-              ← Retour a la selection
+              <p>Retour aux clans</p>
             </button>
             <p className="text-xs uppercase tracking-[0.4em] text-gray-400">Vous consultez : {viewLabels[activeView]}</p>
           </div>
@@ -443,7 +656,7 @@ export default function LorePage() {
                     onClick={() => setSelectedClan(null)}
                     className="text-sm font-semibold text-primary-200 transition hover:text-primary-100"
                   >
-                    ← Retour aux clans
+                    <p>Retour aux clans</p>
                   </button>
                   <div className="flex items-center gap-2">
                     <button
@@ -453,7 +666,7 @@ export default function LorePage() {
                       className="rounded-full border border-white/15 px-4 py-2 text-sm text-white transition disabled:cursor-not-allowed disabled:opacity-40 hover:border-primary-300"
                       aria-label="Voir le clan precedent"
                     >
-                      ←
+                      {"<"}
                     </button>
                     <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
                       {activeClanIndex + 1}/{clanLoreEntries.length}
@@ -465,7 +678,7 @@ export default function LorePage() {
                       className="rounded-full border border-white/15 px-4 py-2 text-sm text-white transition disabled:cursor-not-allowed disabled:opacity-40 hover:border-primary-300"
                       aria-label="Voir le clan suivant"
                     >
-                      →
+                      {">"}
                     </button>
                   </div>
                 </div>
@@ -478,20 +691,36 @@ export default function LorePage() {
                   <div className="space-y-4">
                     <div className="rounded-2xl border border-dashed border-white/15 bg-dark-950/60 p-6 text-center">
                       <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Arbre genealogique</p>
-                      <div className="mt-4 flex h-48 items-center justify-center rounded-xl border border-white/10 bg-dark-900/60 text-gray-500">
+                      <div className="mt-4">
                         {activeClan.crestImage ? (
-                          <div className="relative h-full w-full overflow-hidden rounded-xl">
+                          <button
+                            type="button"
+                            onClick={() => handleImageReveal("crest")}
+                            className="group relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-dark-900/60 text-gray-500 transition hover:border-primary-400 focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
+                            aria-label="Afficher le logo en grand"
+                          >
                             <Image
                               src={activeClan.crestImage.src}
                               alt={activeClan.crestImage.alt}
                               fill
                               sizes="(min-width: 1024px) 360px, 100vw"
-                              className="object-cover"
+                              className={`object-cover transition duration-500 ${revealedImages.crest ? "opacity-100 blur-0" : "opacity-30 blur-sm"}`}
                               priority
                             />
-                          </div>
+                            {!revealedImages.crest ? (
+                              <span className="absolute inset-0 flex items-center justify-center bg-black/45 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
+                                Spoiler : cliquer pour reveler
+                              </span>
+                            ) : (
+                              <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
+                                Voir en plein ecran
+                              </span>
+                            )}
+                          </button>
                         ) : (
-                          <span>{activeClan.crestNote ?? "Ajoutez une illustration de clan."}</span>
+                          <div className="flex h-48 items-center justify-center rounded-xl border border-white/10 bg-dark-900/60 text-gray-500">
+                            {activeClan.crestNote ?? "Ajoutez une illustration de clan."}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -527,25 +756,45 @@ export default function LorePage() {
 
                   <Card className="border-dashed border-primary-400/30 bg-dark-900/70">
                     <CardHeader>
-                      <CardTitle className="text-xl text-white">Logo du clan</CardTitle>
+                      <CardTitle className="text-xl text-white">Logo du Clan</CardTitle>
                       <CardDescription className="text-gray-300">
-                        {activeClan.genealogyImage ? "" : activeClan.genealogyNote ?? "Ajoutez l&apos;arbre genealogique."}
+                        {activeClan.genealogyImage
+                          ? "cliquer pour reveler le logo du Clan."
+                          : activeClan.genealogyNote ?? "Ajoutez l&apos;arbre genealogique."}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="relative flex h-64 items-center justify-center rounded-xl border border-white/10 bg-dark-950/60 text-center text-gray-400 overflow-hidden">
-                        {activeClan.genealogyImage ? (
-                          <Image
-                            src={activeClan.genealogyImage.src}
-                            alt={activeClan.genealogyImage.alt}
-                            fill
-                            sizes="(min-width: 1024px) 420px, 100vw"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <span>Zone reservee pour importer ou dessiner l&apos;arbre.</span>
-                        )}
-                      </div>
+                      {activeClan.genealogyImage ? (
+                        <button
+                          type="button"
+                          onClick={() => handleImageReveal("genealogy")}
+                          className="group w-full rounded-xl border border-white/10 bg-dark-950/60 text-left transition hover:border-primary-400 focus-visible:ring-2 focus-visible:ring-primary-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950"
+                          aria-label="Afficher l'arbre genealogique"
+                        >
+                          <div className="relative flex h-64 items-center justify-center overflow-hidden rounded-xl">
+                            <Image
+                              src={activeClan.genealogyImage.src}
+                              alt={activeClan.genealogyImage.alt}
+                              fill
+                              sizes="(min-width: 1024px) 420px, 100vw"
+                              className={`object-cover transition duration-500 ${revealedImages.genealogy ? "opacity-100 blur-0" : "opacity-30 blur-sm"}`}
+                            />
+                            {!revealedImages.genealogy ? (
+                              <span className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 px-6 text-center text-sm font-semibold uppercase tracking-widest text-white">
+                                Spoiler : cliquer pour reveler
+                              </span>
+                            ) : (
+                              <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
+                                Voir en plein ecran
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      ) : (
+                        <div className="flex h-64 items-center justify-center rounded-xl border border-white/10 bg-dark-950/60 text-center text-gray-400">
+                          Zone reservee pour importer ou dessiner l&apos;arbre.
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 </section>
@@ -652,6 +901,36 @@ export default function LorePage() {
           </>
         )}
       </div>
+      {modalImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/80"
+            aria-label="Fermer l'arbre en plein ecran"
+            onClick={() => setModalImage(null)}
+          />
+          <div className="relative z-10 w-full max-w-5xl rounded-3xl border border-white/10 bg-dark-950/90 p-4 shadow-2xl">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setModalImage(null)}
+                className="rounded-full border border-white/20 px-4 py-1 text-sm font-semibold text-white transition hover:border-primary-300"
+              >
+                Fermer
+              </button>
+            </div>
+            <div className="relative mt-4 aspect-video w-full overflow-hidden rounded-2xl border border-white/10">
+              <Image
+                src={modalImage.src}
+                alt={modalImage.alt}
+                fill
+                sizes="100vw"
+                className="object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
